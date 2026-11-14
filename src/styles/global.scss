@@ -1,0 +1,50 @@
+$lavender-mist: rgba(247, 240, 245, 1);
+$pale-oak: rgba(222, 203, 183, 1);
+$grey-olive: rgba(143, 133, 125, 1);
+$stone-brown: rgba(92, 85, 82, 1);
+$deep-mocha: rgba(67, 54, 51, 1);
+
+$background-color: $pale-oak;
+$border-color: $deep-mocha;
+$border-radius: 8px;
+$content-bg: $lavender-mist;
+$content-h-bg: $deep-mocha;
+$content-h-color: $lavender-mist;
+$font-color: $deep-mocha;
+$font-family: "Geist Sans", sans-serif;
+
+:root {
+  background-color: $background-color;
+  font-family: $font-family;
+  color: $font-color;
+}
+
+.center-in-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.content-container {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .content-header {
+    background-color: $content-h-bg;
+    border: 1px solid $border-color;
+    border-radius: $border-radius $border-radius 0 0;
+    color: $content-h-color;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 16px;
+  }
+
+  .content-body {
+    background-color: $content-bg;
+    border: 1px solid $border-color;
+    border-radius: 0 0 $border-radius $border-radius;
+    padding: 16px;
+  }
+}
