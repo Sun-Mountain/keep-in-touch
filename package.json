@@ -6,16 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "better-auth": "^1.7.23",
-    "dotenv": "^17.4.2",
     "next": "16.4.6",
-    "pg": "^8.21.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -25,9 +19,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
-    "prisma": "^7.10.1",
     "sass": "^1.100.0",
-    "tsx": "^4.22.4",
     "typescript": "^5"
   },
   "packageManager": "pnpm@12.11.2"
