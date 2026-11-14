@@ -2,3 +2,11 @@ allowBuilds:
   esbuild: false
   sharp: false
   unrs-resolver: false
+permissions:
+  '@parcel/watcher':
+    build: false
+  '@prisma/engines':
+    build: false
+  prisma:
+    build: false
+    skills: false

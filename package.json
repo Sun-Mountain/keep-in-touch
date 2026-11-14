@@ -11,8 +11,12 @@
   },
   "dependencies": {
     "next": "16.4.6",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -20,7 +24,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
-    "prisma": "8.0.0-rc.33",
+    "prisma": "^7.10.1",
+    "sass": "^1.100.0",
     "typescript": "^5"
   },
   "packageManager": "pnpm@12.11.2"
