@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.next-playwright
+.next-playwright-tests
+node_modules
+src/generated/prisma
+test-results
+coverage
+.env
+.env.*
+!.env.example
+*.log

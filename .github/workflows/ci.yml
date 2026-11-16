@@ -45,6 +45,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+        env:
+          DATABASE_URL: ${{ env.PLAYWRIGHT_DATABASE_URL }}
+
       - name: Run tests
         run: pnpm test
 

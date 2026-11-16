@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      CONTACT_ENCRYPTION_KEY: ${CONTACT_ENCRYPTION_KEY:?Set CONTACT_ENCRYPTION_KEY}
+      DATABASE_URL: "${COMPOSE_DATABASE_URL:-postgresql://${POSTGRES_USER:-keepintouch}:${POSTGRES_PASSWORD:-keepintouch-local-only}@db:5432/${POSTGRES_DB:-keepintouch}?schema=public}"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3000/api/gmail/callback}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${LOCAL_PORT:-3000}:3000"
+
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-keepintouch}
+      POSTGRES_USER: ${POSTGRES_USER:-keepintouch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keepintouch-local-only}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $lavender-mist: rgba(247, 240, 245, 1);
 $pale-oak: rgba(222, 203, 183, 1);
 $grey-olive: rgba(143, 133, 125, 1);
@@ -47,6 +49,22 @@ nav {
   justify-content: flex-end;
 }
 
+.navigation-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  a {
+    color: $primary-text;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}
+
 button {
   background-color: $primary;
   color: $primary-text;
@@ -59,7 +77,7 @@ button {
   transition: background-color .2s, box-shadow .2s;
 
   &:hover {
-    background-color: darken($secondary, 10%);
+    background-color: color.adjust($secondary, $lightness: -10%);
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   }
 }
@@ -165,6 +183,351 @@ button {
 .contact-entry-options {
   display: grid;
   gap: 20px;
+}
+
+.contact-outreach {
+  margin-bottom: 28px;
+  padding: 24px;
+  border: 1px solid rgba(74, 78, 105, 0.18);
+  border-radius: 12px;
+  background: $lavender-mist;
+  box-shadow: 0 8px 24px rgba(34, 34, 59, 0.06);
+
+  h2 {
+    margin: 4px 0 8px;
+    color: $space-indigo;
+    font-size: 24px;
+  }
+
+  h3 {
+    margin: 0 0 8px;
+    color: $space-indigo;
+    font-size: 17px;
+  }
+
+  a {
+    color: $dusty-grape;
+    text-underline-offset: 3px;
+  }
+}
+
+.settings-sections {
+  display: grid;
+  gap: 20px;
+}
+
+.settings-card {
+  padding: 24px;
+  border: 1px solid rgba(74, 78, 105, 0.18);
+  border-radius: 12px;
+  background: $lavender-mist;
+  box-shadow: 0 8px 24px rgba(34, 34, 59, 0.06);
+
+  h2 {
+    margin: 4px 0 8px;
+    color: $space-indigo;
+    font-size: 24px;
+  }
+
+  > p:not(.eyebrow) {
+    color: $grey-olive;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  ol {
+    padding-left: 22px;
+    color: $space-indigo;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  details {
+    margin-top: 12px;
+  }
+
+  summary {
+    color: $dusty-grape;
+    cursor: pointer;
+    text-underline-offset: 3px;
+  }
+}
+
+.settings-provider {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(74, 78, 105, 0.16);
+
+  h3 {
+    margin: 0 0 8px;
+    color: $space-indigo;
+    font-size: 17px;
+  }
+
+  p {
+    color: $grey-olive;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  strong {
+    color: $space-indigo;
+  }
+
+  form {
+    margin: 8px 0;
+  }
+
+  a {
+    color: $dusty-grape;
+    text-underline-offset: 3px;
+  }
+}
+
+.contact-outreach-intro,
+.gmail-connection,
+.outreach-muted {
+  color: $grey-olive;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contact-outreach-intro {
+  margin: 0 0 12px;
+}
+
+.gmail-connection {
+  margin: 12px 0;
+
+  strong {
+    color: $space-indigo;
+  }
+
+  details {
+    margin-top: 8px;
+  }
+
+  summary {
+    color: $dusty-grape;
+    cursor: pointer;
+    text-underline-offset: 3px;
+  }
+
+  > form {
+    margin: 8px 0;
+  }
+}
+
+.outreach-actions,
+.outreach-channel-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.outreach-actions {
+  margin-top: 6px;
+
+  form {
+    margin: 0;
+  }
+}
+
+.outreach-link-button,
+.outreach-secondary-button {
+  padding: 0;
+  background: transparent;
+  color: $dusty-grape;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.outreach-channel-options {
+  margin: 14px 0;
+  color: $space-indigo;
+  font-size: 13px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+}
+
+.outreach-selection {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid rgba(74, 78, 105, 0.16);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.outreach-selection-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+
+  label,
+  .outreach-field {
+    display: grid;
+    flex: 1 1 220px;
+    gap: 6px;
+    color: $space-indigo;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  input {
+    box-sizing: border-box;
+    min-height: 40px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    color: $space-indigo;
+    font: inherit;
+  }
+}
+
+.outreach-contact-list,
+.outreach-draft-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outreach-contact-list {
+  max-height: 280px;
+  overflow: auto;
+
+  li {
+    border-bottom: 1px solid rgba(74, 78, 105, 0.1);
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 4px;
+    color: $space-indigo;
+    cursor: pointer;
+  }
+
+  span {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  small {
+    overflow-wrap: anywhere;
+    color: $grey-olive;
+  }
+}
+
+.outreach-field {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+  color: $space-indigo;
+  font-size: 12px;
+  font-weight: 600;
+
+  input,
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    background: #fff;
+    color: $space-indigo;
+    font: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  span {
+    color: $grey-olive;
+    font-size: 11px;
+    font-weight: 400;
+  }
+}
+
+.outreach-review {
+  margin-top: 14px;
+
+  > p,
+  li {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+}
+
+.outreach-preview {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid rgba(74, 78, 105, 0.16);
+  border-radius: 8px;
+  background: #fff;
+  color: $space-indigo;
+  overflow-wrap: anywhere;
+
+  p {
+    margin-bottom: 0;
+    white-space: pre-wrap;
+  }
+}
+
+.outreach-draft-list {
+  li {
+    font-size: 13px;
+  }
+}
+
+.outreach-status,
+.outreach-error {
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.outreach-status {
+  color: $space-indigo;
+}
+
+.outreach-error {
+  color: #a33;
+}
+
+.outreach-muted {
+  margin: 8px 0 0;
 }
 
 .add-contact-panel,
@@ -719,6 +1082,14 @@ button {
 @media (max-width: 480px) {
   .dashboard-page {
     padding: 32px 16px 48px;
+  }
+
+  .settings-card {
+    padding: 18px;
+  }
+
+  .contact-outreach {
+    padding: 18px;
   }
 
   .contact-field-grid {
