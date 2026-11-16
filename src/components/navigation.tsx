@@ -12,6 +12,7 @@ export default async function Navigation() {
     <nav aria-label="Main navigation" className="navigation">
       <div className="navigation-links">
         <Link href="/dashboard">Your circle</Link>
+        <Link href="/dashboard/mailing-lists">Mailing lists</Link>
         <Link href="/dashboard/outreach">Email and text</Link>
         <Link href="/dashboard/settings">Settings</Link>
         <SignOutButton />

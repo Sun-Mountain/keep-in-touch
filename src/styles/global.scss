@@ -1068,8 +1068,283 @@ button {
   }
 }
 
+.mailing-lists-section {
+  margin-top: 0;
+  padding: 24px;
+  border: 1px solid rgba(74, 78, 105, 0.18);
+  border-radius: 12px;
+  background: $lavender-mist;
+  box-shadow: 0 8px 24px rgba(34, 34, 59, 0.06);
+}
+
+.mailing-lists-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 20px;
+
+  h3 {
+    margin: 0 0 12px;
+    color: $space-indigo;
+    font-size: 17px;
+  }
+}
+
+.mailing-list-builder,
+.saved-mailing-lists {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(74, 78, 105, 0.14);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.mailing-list-builder > label {
+  display: grid;
+  gap: 6px;
+  color: $space-indigo;
+  font-size: 12px;
+  font-weight: 600;
+
+  input {
+    box-sizing: border-box;
+    min-height: 40px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    color: $space-indigo;
+    font: inherit;
+  }
+}
+
+.mailing-list-builder > .mailing-list-search {
+  margin-top: 14px;
+
+  input {
+    appearance: none;
+  }
+}
+
+.mailing-list-selection-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  color: $space-indigo;
+  font-size: 12px;
+  font-weight: 600;
+
+  button {
+    padding: 0;
+    background: transparent;
+    color: $dusty-grape;
+    font-size: 12px;
+
+    &:hover {
+      background: transparent;
+      box-shadow: none;
+      text-decoration: underline;
+    }
+  }
+}
+
+.mailing-list-contact-options,
+.saved-mailing-lists > ul {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  margin: 10px 0 16px;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.mailing-list-contact-options {
+  li {
+    border-bottom: 1px solid rgba(74, 78, 105, 0.1);
+  }
+
+  label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 4px;
+    color: $space-indigo;
+    cursor: pointer;
+  }
+
+  span {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+  }
+
+  small {
+    color: $grey-olive;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+}
+
+.saved-mailing-lists > ul {
+  max-height: none;
+  margin-bottom: 0;
+
+  > li {
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(74, 78, 105, 0.1);
+  }
+}
+
+.saved-mailing-list {
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    color: $space-indigo;
+    cursor: pointer;
+
+    span {
+      color: $grey-olive;
+      font-size: 12px;
+    }
+  }
+}
+
+.saved-mailing-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(74, 78, 105, 0.1);
+
+  form {
+    margin: 0;
+  }
+}
+
+.mailing-list-printable {
+  display: none;
+}
+
+.mailing-list-status-list {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid rgba(74, 78, 105, 0.14);
+    border-radius: 5px;
+  }
+
+  address {
+    margin-top: 3px;
+    color: $grey-olive;
+    font-size: 11px;
+    font-style: normal;
+    line-height: 1.4;
+
+    span {
+      display: block;
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: 3px;
+    color: $grey-olive;
+    font-size: 11px;
+  }
+}
+
+.mailing-list-address-name-form {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: end;
+  gap: 8px;
+
+  label {
+    display: grid;
+    flex: 1;
+    gap: 4px;
+    color: $grey-olive;
+    font-size: 10px;
+  }
+
+  input {
+    box-sizing: border-box;
+    min-height: 34px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    color: $space-indigo;
+    font: inherit;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+.mailing-list-sent-form {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.mailing-list-sent-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $grey-olive;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mailing-address-labels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    align-content: start;
+    min-height: 82px;
+    padding: 10px;
+    border: 1px solid rgba(74, 78, 105, 0.14);
+    border-radius: 5px;
+    color: $space-indigo;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 820px) {
   .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .mailing-lists-layout {
     grid-template-columns: 1fr;
   }
 
@@ -1077,6 +1352,7 @@ button {
     align-items: flex-start;
     flex-direction: column;
   }
+
 }
 
 @media (max-width: 480px) {
@@ -1085,6 +1361,10 @@ button {
   }
 
   .settings-card {
+    padding: 18px;
+  }
+
+  .mailing-lists-section {
     padding: 18px;
   }
 
@@ -1108,5 +1388,49 @@ button {
   .shared-address-heading,
   .shared-contact-person {
     padding: 18px;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .saved-mailing-list.is-printing,
+  .saved-mailing-list.is-printing * {
+    visibility: visible !important;
+  }
+
+  .saved-mailing-list.is-printing {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    color: #000;
+  }
+
+  .saved-mailing-list.is-printing > summary,
+  .saved-mailing-list.is-printing .saved-mailing-list-actions {
+    display: none;
+  }
+
+  .saved-mailing-list.is-printing .mailing-list-printable {
+    display: block;
+  }
+
+  .saved-mailing-list.is-printing .mailing-list-status-list {
+    display: none;
+  }
+
+  .mailing-address-labels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+
+    li {
+      min-height: 90px;
+      border-color: #999;
+      break-inside: avoid;
+      color: #000;
+    }
   }
 }

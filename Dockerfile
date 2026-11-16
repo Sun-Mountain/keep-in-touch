@@ -53,4 +53,4 @@ RUN chown -R node:node /pnpm
 
 USER node
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && exec node server.js"]

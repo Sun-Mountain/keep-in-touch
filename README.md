@@ -30,6 +30,10 @@ Invalid rows and duplicates are skipped and reported. A row is considered a dupl
 
 On the dashboard's **Email and text** page, select up to 25 contacts to send separate, personalized update-check emails or open individual drafts in your personal email app. Text messages open as drafts in your device's messaging app, so they use your personal number and are never sent by the server.
 
+## Mailing lists
+
+Open **Mailing lists** from the navigation to select contacts with complete mailing addresses and save a reusable, named mailing list. Lists are private to your account, and deleting a contact removes it from any saved lists. Expand a saved list to review its people, choose an alternative name for an address on the printed label, or delete the list. Each unique mailing address has a persistent checkbox to track when its letter has been sent; people sharing an address are marked together.
+
 Use **Settings** to connect email accounts. To send email through Gmail, create a Google OAuth web client, enable the Gmail API, configure the OAuth consent screen, and add `http://localhost:3000/api/gmail/callback` (or your deployed callback URL) as an authorized redirect URI. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` on the server. Gmail sending uses the `gmail.send` permission; Google's app verification or test-user restrictions may apply. Refresh tokens are encrypted at rest with `CONTACT_ENCRYPTION_KEY`. Disconnecting in the app removes the stored token; you can also revoke access in your Google account settings.
 
 For Proton Mail, the Settings page also supports direct sending through [Proton SMTP](https://proton.me/support/smtp-submission) for paid plans using a custom-domain address. Generate an SMTP token in Proton Mail under **Settings → All settings → IMAP/SMTP → SMTP tokens**, then connect the address and token in the app. The token is encrypted at rest with `CONTACT_ENCRYPTION_KEY`. The app uses Proton's SMTP submission endpoint on port 587; the application server must allow outbound SMTP. Proton SMTP-submitted messages are not end-to-end encrypted. Proton SMTP tokens do not support regular `@proton.me` addresses.
@@ -46,20 +50,17 @@ The root `Dockerfile` builds a production Next.js standalone image. Railway can 
 - `CONTACT_ENCRYPTION_KEY` — a base64-encoded random 32-byte key.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` — optional, required only for Gmail; use the deployed HTTPS callback URL.
 
-Set Railway's pre-deploy command to `./node_modules/.bin/prisma migrate deploy` to apply checked-in migrations before the new app version starts. Check and reconcile an existing database's migration history before running this on a database with drift.
+The Docker image runs `./node_modules/.bin/prisma migrate deploy` against `DATABASE_URL` before starting the app. Check and reconcile an existing database's migration history before deploying; the app will not start if migrations fail.
 
 `docker-compose.yml` includes the app and PostgreSQL for local use and can also be imported into a Railway project. Railway's Compose support is still limited, so review the imported services before deploying; alternatively, deploy the app with the Dockerfile and add a Railway-managed PostgreSQL service. The Compose file uses its own `COMPOSE_DATABASE_URL` override so a `DATABASE_URL` in the local `.env` does not accidentally point the container at `localhost`; by default it connects to the Compose `db` service. Keep Compose's local PostgreSQL volume backed up. The default database password is for local development only. For an imported Compose deployment using Railway-managed PostgreSQL, set `COMPOSE_DATABASE_URL` to that service's connection string/reference; when deploying the Dockerfile directly, set `DATABASE_URL`.
 
 To run locally, provide `BETTER_AUTH_SECRET` and `CONTACT_ENCRYPTION_KEY` in your shell or `.env`, then run:
 
 ```sh
-docker compose up -d db
-docker compose build app
-docker compose run --rm app ./node_modules/.bin/prisma migrate deploy
-docker compose up app
+docker compose up --build
 ```
 
-The second command is needed for first-time setup and after adding migrations. The app listens on port 3000 by default; change the host port with `LOCAL_PORT`.
+Compose waits for PostgreSQL to become healthy, then the app container applies pending migrations before serving traffic. The app listens on port 3000 by default; change the host port with `LOCAL_PORT`.
 
 ## Useful commands
 

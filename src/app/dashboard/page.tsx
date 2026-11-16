@@ -148,7 +148,6 @@ export default async function Dashboard() {
   }));
   const contactGroups = groupContactsByAddress(contacts);
   const addressCount = contactGroups.filter((group) => group.key !== null).length;
-
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
