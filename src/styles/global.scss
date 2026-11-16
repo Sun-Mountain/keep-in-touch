@@ -180,6 +180,30 @@ button {
   padding: 24px;
 }
 
+.development-tools {
+  padding: 18px;
+  border: 1px dashed rgba(74, 78, 105, 0.3);
+  border-radius: 12px;
+  background: rgba(242, 233, 228, 0.6);
+
+  p {
+    margin: 0 0 10px;
+  }
+
+  .eyebrow {
+    margin-bottom: 6px;
+  }
+}
+
+.erase-contacts-button {
+  background: #a33;
+  font-size: 13px;
+
+  &:hover {
+    background: #822;
+  }
+}
+
 .panel-heading {
   margin-bottom: 0;
 
@@ -464,7 +488,7 @@ button {
     font-size: 24px;
   }
 
-  span {
+  > span {
     display: grid;
     width: 28px;
     height: 28px;
@@ -473,6 +497,12 @@ button {
     background: $parchment;
     font-size: 12px;
     font-weight: 700;
+  }
+
+  .address-count {
+    margin: 0;
+    color: $font-color;
+    font-size: 14px;
   }
 }
 
