@@ -100,8 +100,55 @@ export async function createMailingList(
       },
     },
   });
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/mailing-lists");
   return { status: "success", message: `Saved "${name}" mailing list.` };
+}
+
+export async function updateMailingListAddressSent(formData: FormData) {
+  const userId = await getUserId();
+  const { mailingListId, contactIds } = parseMailingListAddress(formData);
+
+  const result = await db.mailingListContact.updateMany({
+    where: {
+      mailingListId,
+      contactId: { in: contactIds },
+      mailingList: { userId },
+      contact: { userId },
+    },
+    data: {
+      sentAt: getText(formData, "sent") === "true" ? new Date() : null,
+    },
+  });
+  if (result.count !== contactIds.length) {
+    throw new Error("Some mailing-list members could not be updated.");
+  }
+
+  revalidatePath("/dashboard/mailing-lists");
+}
+
+export async function updateMailingListAddressName(formData: FormData) {
+  const userId = await getUserId();
+  const { mailingListId, contactIds } = parseMailingListAddress(formData);
+  const addressLabelName = getText(formData, "addressLabelName")
+    .replace(/\s+/g, " ");
+  if (addressLabelName.length > 100) {
+    throw new Error("An address label name must be 100 characters or fewer.");
+  }
+
+  const result = await db.mailingListContact.updateMany({
+    where: {
+      mailingListId,
+      contactId: { in: contactIds },
+      mailingList: { userId },
+      contact: { userId },
+    },
+    data: { addressLabelName: addressLabelName || null },
+  });
+  if (result.count !== contactIds.length) {
+    throw new Error("Some mailing-list members could not be updated.");
+  }
+
+  revalidatePath("/dashboard/mailing-lists");
 }
 
 export async function deleteMailingList(formData: FormData) {
@@ -110,5 +157,24 @@ export async function deleteMailingList(formData: FormData) {
   if (!id) throw new Error("A mailing list ID is required.");
 
   await db.mailingList.deleteMany({ where: { id, userId } });
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/mailing-lists");
+}
+
+function parseMailingListAddress(formData: FormData) {
+  const mailingListId = getText(formData, "mailingListId");
+  const rawIds = formData.getAll("contactId");
+  if (
+    !mailingListId ||
+    rawIds.length === 0 ||
+    rawIds.length > MAX_MAILING_LIST_MEMBERS ||
+    rawIds.some((id) => typeof id !== "string" || !id.trim())
+  ) {
+    throw new Error("A mailing list and its address members are required.");
+  }
+
+  const contactIds = rawIds.map((id) => String(id).trim());
+  if (new Set(contactIds).size !== contactIds.length) {
+    throw new Error("A mailing-list member was submitted more than once.");
+  }
+  return { mailingListId, contactIds };
 }

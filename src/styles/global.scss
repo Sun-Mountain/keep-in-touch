@@ -1069,33 +1069,12 @@ button {
 }
 
 .mailing-lists-section {
-  margin-top: 32px;
+  margin-top: 0;
   padding: 24px;
   border: 1px solid rgba(74, 78, 105, 0.18);
   border-radius: 12px;
   background: $lavender-mist;
   box-shadow: 0 8px 24px rgba(34, 34, 59, 0.06);
-}
-
-.mailing-lists-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-
-  h2 {
-    margin: 4px 0 0;
-    color: $space-indigo;
-    font-size: 24px;
-  }
-
-  > p {
-    max-width: 360px;
-    margin: 0;
-    color: $grey-olive;
-    font-size: 13px;
-    line-height: 1.5;
-  }
 }
 
 .mailing-lists-layout {
@@ -1136,6 +1115,14 @@ button {
     border-radius: 5px;
     color: $space-indigo;
     font: inherit;
+  }
+}
+
+.mailing-list-builder > .mailing-list-search {
+  margin-top: 14px;
+
+  input {
+    appearance: none;
   }
 }
 
@@ -1247,6 +1234,89 @@ button {
   display: none;
 }
 
+.mailing-list-status-list {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid rgba(74, 78, 105, 0.14);
+    border-radius: 5px;
+  }
+
+  address {
+    margin-top: 3px;
+    color: $grey-olive;
+    font-size: 11px;
+    font-style: normal;
+    line-height: 1.4;
+
+    span {
+      display: block;
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: 3px;
+    color: $grey-olive;
+    font-size: 11px;
+  }
+}
+
+.mailing-list-address-name-form {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: end;
+  gap: 8px;
+
+  label {
+    display: grid;
+    flex: 1;
+    gap: 4px;
+    color: $grey-olive;
+    font-size: 10px;
+  }
+
+  input {
+    box-sizing: border-box;
+    min-height: 34px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    color: $space-indigo;
+    font: inherit;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+.mailing-list-sent-form {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.mailing-list-sent-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $grey-olive;
+  font-size: 11px;
+  cursor: pointer;
+}
+
 .mailing-address-labels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1283,10 +1353,6 @@ button {
     flex-direction: column;
   }
 
-  .mailing-lists-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1350,6 +1416,10 @@ button {
 
   .saved-mailing-list.is-printing .mailing-list-printable {
     display: block;
+  }
+
+  .saved-mailing-list.is-printing .mailing-list-status-list {
+    display: none;
   }
 
   .mailing-address-labels {

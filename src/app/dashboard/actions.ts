@@ -61,6 +61,18 @@ function getText(formData: FormData, name: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function mailingAddressChanged(before: ContactDetails, after: ContactDetails) {
+  const fields = [
+    "addressLine1",
+    "addressLine2",
+    "addressCity",
+    "addressRegion",
+    "addressPostalCode",
+    "addressCountry",
+  ] as const;
+  return fields.some((field) => before[field] !== after[field]);
+}
+
 function parseContactForm(
   formData: FormData,
   requireContactMethod: boolean,
@@ -271,20 +283,31 @@ export async function confirmContactUpdate(
     return { status: "success", message: "The contact already has this information." };
   }
 
-  const result = await db.contact.updateMany({
-    where: { id: contactId, userId, updatedAt: existingContact.updatedAt },
-    data: {
-      ...encryptedContactStorageData({
-        ...parsed.details,
-        lastContact: existingDetails.lastContact,
-      }),
-    },
+  const addressChanged = mailingAddressChanged(existingDetails, parsed.details);
+  const result = await db.$transaction(async (transaction) => {
+    const updated = await transaction.contact.updateMany({
+      where: { id: contactId, userId, updatedAt: existingContact.updatedAt },
+      data: {
+        ...encryptedContactStorageData({
+          ...parsed.details,
+          lastContact: existingDetails.lastContact,
+        }),
+      },
+    });
+    if (updated.count > 0 && addressChanged) {
+      await transaction.mailingListContact.updateMany({
+        where: { contactId, mailingList: { userId } },
+        data: { sentAt: null, addressLabelName: null },
+      });
+    }
+    return updated;
   });
   if (result.count === 0) {
     return { status: "error", message: "That contact could not be found." };
   }
 
   revalidatePath("/dashboard");
+  if (addressChanged) revalidatePath("/dashboard/mailing-lists");
   return { status: "success", message: "Contact information updated." };
 }
 
@@ -333,33 +356,43 @@ export async function updateContact(
     return { error: "That contact could not be found.", success: false };
   }
   const existingDetails = decryptContactDetails(existingContact);
+  const updatedDetails: ContactDetails = {
+    name,
+    email: email || null,
+    phone: phone || null,
+    birthday,
+    familyMembers: getText(formData, "familyMembers") || null,
+    addressLine1,
+    addressLine2: addressLine2 || null,
+    addressCity,
+    addressRegion,
+    addressPostalCode,
+    addressCountry: addressCountry || null,
+    company: getText(formData, "company") || null,
+    notes: getText(formData, "notes") || null,
+    lastContact: existingDetails.lastContact,
+  };
+  const addressChanged = mailingAddressChanged(existingDetails, updatedDetails);
 
-  const result = await db.contact.updateMany({
-    where: { id, userId },
-    data: {
-      ...encryptedContactStorageData({
-        name,
-        email: email || null,
-        phone: phone || null,
-        birthday,
-        familyMembers: getText(formData, "familyMembers") || null,
-        addressLine1,
-        addressLine2: addressLine2 || null,
-        addressCity,
-        addressRegion,
-        addressPostalCode,
-        addressCountry: addressCountry || null,
-        company: getText(formData, "company") || null,
-        notes: getText(formData, "notes") || null,
-        lastContact: existingDetails.lastContact,
-      }),
-    },
+  const result = await db.$transaction(async (transaction) => {
+    const updated = await transaction.contact.updateMany({
+      where: { id, userId },
+      data: { ...encryptedContactStorageData(updatedDetails) },
+    });
+    if (updated.count > 0 && addressChanged) {
+      await transaction.mailingListContact.updateMany({
+        where: { contactId: id, mailingList: { userId } },
+        data: { sentAt: null, addressLabelName: null },
+      });
+    }
+    return updated;
   });
   if (result.count === 0) {
     return { error: "That contact could not be found.", success: false };
   }
 
   revalidatePath("/dashboard");
+  if (addressChanged) revalidatePath("/dashboard/mailing-lists");
   return { error: "", success: true };
 }
 

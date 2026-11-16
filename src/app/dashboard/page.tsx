@@ -5,7 +5,6 @@ import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
 import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
-import { MailingLists } from "@/app/dashboard/mailing-lists";
 import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { decryptContactDetails } from "@/lib/contact-crypto";
@@ -139,37 +138,16 @@ export default async function Dashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/");
 
-  const [storedContacts, storedMailingLists] = await Promise.all([
-    db.contact.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-    }),
-    db.mailingList.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      include: {
-        members: {
-          where: { contact: { userId: session.user.id } },
-          include: { contact: true },
-        },
-      },
-    }),
-  ]);
+  const storedContacts = await db.contact.findMany({
+    where: { userId: session.user.id },
+    orderBy: { updatedAt: "desc" },
+  });
   const contacts = storedContacts.map((contact) => ({
     ...contact,
     ...decryptContactDetails(contact),
   }));
   const contactGroups = groupContactsByAddress(contacts);
   const addressCount = contactGroups.filter((group) => group.key !== null).length;
-  const mailingLists = storedMailingLists.map((mailingList) => ({
-    id: mailingList.id,
-    name: mailingList.name,
-    contacts: mailingList.members.map((member) => ({
-      id: member.contact.id,
-      ...decryptContactDetails(member.contact),
-    })),
-  }));
-
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
@@ -260,30 +238,6 @@ export default async function Dashboard() {
           )}
         </section>
       </div>
-      <MailingLists
-        contacts={contacts.map(
-          ({
-            id,
-            name,
-            addressLine1,
-            addressLine2,
-            addressCity,
-            addressRegion,
-            addressPostalCode,
-            addressCountry,
-          }) => ({
-            id,
-            name,
-            addressLine1,
-            addressLine2,
-            addressCity,
-            addressRegion,
-            addressPostalCode,
-            addressCountry,
-          }),
-        )}
-        mailingLists={mailingLists}
-      />
     </div>
   );
 }

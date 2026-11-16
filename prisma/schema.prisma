@@ -128,10 +128,12 @@ model MailingList {
 }
 
 model MailingListContact {
-  mailingListId String
-  contactId     String
-  mailingList   MailingList @relation(fields: [mailingListId], references: [id], onDelete: Cascade)
-  contact       Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  mailingListId    String
+  contactId        String
+  sentAt           DateTime?
+  addressLabelName String?
+  mailingList      MailingList @relation(fields: [mailingListId], references: [id], onDelete: Cascade)
+  contact          Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
   @@id([mailingListId, contactId])
   @@index([contactId])
