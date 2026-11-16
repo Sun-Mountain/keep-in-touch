@@ -8,12 +8,8 @@ import {
   renderOutreachTemplate,
 } from "@/lib/contact-outreach.js";
 import {
-  connectProton,
-  disconnectGmail,
-  disconnectProton,
   sendEmailOutreach,
   type OutreachSendState,
-  type ProtonConnectionState,
 } from "./outreach-actions";
 
 type OutreachContact = {
@@ -27,68 +23,18 @@ type Channel = "email" | "text";
 type Delivery = "draft" | "gmail" | "proton";
 
 const initialSendState: OutreachSendState = { status: "idle" };
-const initialProtonConnectionState: ProtonConnectionState = { status: "idle" };
 const MAX_VISIBLE_CONTACTS = 100;
-
-function ProtonConnectionForm() {
-  const [connectionState, connectAction, connectPending] = useActionState(
-    connectProton,
-    initialProtonConnectionState,
-  );
-
-  return (
-    <>
-      <form action={connectAction}>
-        <label className="outreach-field">
-          Proton custom-domain email address
-          <input
-            autoComplete="email"
-            maxLength={254}
-            name="protonEmail"
-            required
-            type="email"
-          />
-        </label>
-        <label className="outreach-field">
-          Proton SMTP token
-          <input
-            autoComplete="new-password"
-            maxLength={4_096}
-            name="smtpToken"
-            required
-            type="password"
-          />
-        </label>
-        <button disabled={connectPending} type="submit">
-          {connectPending ? "Verifying..." : "Connect Proton SMTP"}
-        </button>
-      </form>
-      {connectionState.status === "error" && (
-        <p className="outreach-error" role="alert">{connectionState.message}</p>
-      )}
-      {connectionState.status === "connected" && (
-        <p className="outreach-status" role="status">{connectionState.message}</p>
-      )}
-      <p className="outreach-muted">
-        Proton SMTP requires a paid plan with a custom-domain address and SMTP
-        token. SMTP-submitted messages are not end-to-end encrypted.
-      </p>
-    </>
-  );
-}
 
 export function ContactOutreach({
   contacts,
   gmailEmail,
   protonEmail,
   gmailOAuthConfigured,
-  gmailNotice,
 }: {
   contacts: OutreachContact[];
   gmailEmail: string | null;
   protonEmail: string | null;
   gmailOAuthConfigured: boolean;
-  gmailNotice: string | null;
 }) {
   const [channel, setChannel] = useState<Channel>("email");
   const [delivery, setDelivery] = useState<Delivery>("draft");
@@ -192,57 +138,19 @@ export function ContactOutreach({
         separate, personalized messages.
       </p>
 
-      {gmailNotice && (
-        <p className="outreach-status" role="status">{gmailNotice}</p>
-      )}
-
-      {gmailEmail ? (
-        <div className="gmail-connection">
-          <p>Connected Gmail: <strong>{gmailEmail}</strong></p>
-          <div className="outreach-actions">
-            <a href="/api/gmail/connect">Reconnect Gmail</a>
-            <form
-              action={disconnectGmail}
-              onSubmit={() => setDelivery("draft")}
-            >
-              <button className="outreach-link-button" type="submit">
-                Disconnect
-              </button>
-            </form>
-          </div>
-        </div>
-      ) : gmailOAuthConfigured ? (
-        <p className="gmail-connection">
-          Gmail is not connected.{" "}
-          <a href="/api/gmail/connect">Connect Gmail</a> to send directly.
-        </p>
-      ) : (
-        <p className="gmail-connection">
-          Gmail sending is not configured. Personal email and text drafts are
-          still available.
-        </p>
-      )}
-
       <div className="gmail-connection">
-        {protonEmail && (
-          <>
-            <p>Connected Proton SMTP: <strong>{protonEmail}</strong></p>
-            <form
-              action={disconnectProton}
-              onSubmit={() => setDelivery("draft")}
-            >
-              <button className="outreach-link-button" type="submit">
-                Disconnect Proton
-              </button>
-            </form>
-          </>
-        )}
-        <details open={!protonEmail}>
-          <summary>
-            {protonEmail ? "Update Proton SMTP settings" : "Connect Proton SMTP"}
-          </summary>
-          <ProtonConnectionForm />
-        </details>
+        <p>
+          {gmailEmail && gmailOAuthConfigured && (
+            <>Gmail: <strong>{gmailEmail}</strong>. </>
+          )}
+          {protonEmail && (
+            <>Proton Mail: <strong>{protonEmail}</strong>. </>
+          )}
+          {gmailEmail && !gmailOAuthConfigured && "Gmail sending needs server setup. "}
+          {!((gmailEmail && gmailOAuthConfigured) || protonEmail) &&
+            "No email account is ready for direct sending; personal drafts remain available. "}
+          <a href="/dashboard/settings">Manage email and SMS settings</a>
+        </p>
       </div>
 
       <div className="outreach-channel-options" role="group" aria-label="Message channel">

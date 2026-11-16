@@ -9,16 +9,11 @@ export default async function Navigation() {
   if (!session) redirect("/");
 
   return (
-    <nav className="navigation">
-      {/* <Link className="wordmark" href="/dashboard">
-        <span className="brand-mark" aria-hidden="true">k</span>
-        keep in touch
-      </Link>
-      <div className="header-account">
-        <span className="account-name">{session.user.name}</span>
-        <SignOutButton />
-      </div> */}
-      <div>
+    <nav aria-label="Main navigation" className="navigation">
+      <div className="navigation-links">
+        <Link href="/dashboard">Your circle</Link>
+        <Link href="/dashboard/outreach">Email and text</Link>
+        <Link href="/dashboard/settings">Settings</Link>
         <SignOutButton />
       </div>
     </nav>

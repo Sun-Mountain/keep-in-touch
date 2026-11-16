@@ -11,10 +11,10 @@ import {
 
 const STATE_COOKIE = "gmail_oauth_state";
 
-function dashboardRedirect(status: string) {
+function settingsRedirect(status: string) {
   const appUrl = process.env.BETTER_AUTH_URL;
   if (!appUrl) throw new Error("BETTER_AUTH_URL must be set.");
-  const url = new URL("/dashboard", appUrl);
+  const url = new URL("/dashboard/settings", appUrl);
   url.searchParams.set("gmail", status);
   return Response.redirect(url, 303);
 }
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   cookieStore.delete(STATE_COOKIE);
 
   const query = new URL(request.url).searchParams;
-  if (query.has("error")) return dashboardRedirect("cancelled");
+  if (query.has("error")) return settingsRedirect("cancelled");
 
   const state = query.get("state") ?? "";
   const code = query.get("code") ?? "";
@@ -33,17 +33,17 @@ export async function GET(request: Request) {
   const expectedState = separator === -1 ? "" : storedState.slice(0, separator);
   const expectedUserId = separator === -1 ? "" : storedState.slice(separator + 1);
   if (!state || state !== expectedState || !expectedUserId || !code) {
-    return dashboardRedirect("invalid_state");
+    return settingsRedirect("invalid_state");
   }
 
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session || session.user.id !== expectedUserId) {
-    return dashboardRedirect("session_expired");
+    return settingsRedirect("session_expired");
   }
 
   try {
     const config = getGoogleOAuthConfig();
-    if (!config) return dashboardRedirect("not_configured");
+    if (!config) return settingsRedirect("not_configured");
 
     const authorization = await exchangeGoogleAuthorizationCode(config, code);
     const existing = await db.gmailConnection.findUnique({
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
         : null;
     const refreshToken = authorization.refreshToken ?? existingRefreshToken;
     if (!refreshToken) {
-      return dashboardRedirect("refresh_token_missing");
+      return settingsRedirect("refresh_token_missing");
     }
 
     await db.gmailConnection.upsert({
@@ -70,10 +70,10 @@ export async function GET(request: Request) {
         encryptedRefreshToken: encryptGmailRefreshToken(refreshToken),
       },
     });
-    return dashboardRedirect("connected");
+    return settingsRedirect("connected");
   } catch (error) {
     if (!(error instanceof GmailOAuthError)) throw error;
     console.error("Gmail authorization callback failed.", error);
-    return dashboardRedirect("error");
+    return settingsRedirect("error");
   }
 }

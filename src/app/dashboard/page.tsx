@@ -4,7 +4,6 @@ import { deleteContact } from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
-import { ContactOutreach } from "@/app/dashboard/contact-outreach";
 import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
 import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
@@ -135,40 +134,14 @@ function ContactPerson({
   );
 }
 
-const gmailNotices: Record<string, string> = {
-  connected: "Gmail was connected successfully.",
-  not_configured: "Gmail OAuth is not configured on this server yet.",
-  cancelled: "Gmail connection was cancelled.",
-  invalid_state: "The Gmail connection expired or could not be verified. Please try again.",
-  session_expired: "Your session expired during Gmail authorization. Please sign in and try again.",
-  refresh_token_missing: "Google did not provide ongoing Gmail access. Reconnect and approve access again.",
-  error: "Gmail could not be connected. Please try again.",
-};
-
-export default async function Dashboard({
-  searchParams,
-}: {
-  searchParams: Promise<{ gmail?: string | string[] }>;
-}) {
+export default async function Dashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/");
 
-  const [storedContacts, gmailConnection, protonConnection] = await Promise.all([
-    db.contact.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-    }),
-    db.gmailConnection.findUnique({
-      where: { userId: session.user.id },
-      select: { email: true },
-    }),
-    db.protonConnection.findUnique({
-      where: { userId: session.user.id },
-      select: { email: true },
-    }),
-  ]);
-  const query = await searchParams;
-  const gmailStatus = typeof query.gmail === "string" ? query.gmail : null;
+  const storedContacts = await db.contact.findMany({
+    where: { userId: session.user.id },
+    orderBy: { updatedAt: "desc" },
+  });
   const contacts = storedContacts.map((contact) => ({
     ...contact,
     ...decryptContactDetails(contact),
@@ -185,23 +158,6 @@ export default async function Dashboard({
         </div>
         <p>Keep the little details close, so staying in touch feels natural.</p>
       </header>
-
-      <ContactOutreach
-        contacts={contacts.map(({ id, name, email, phone }) => ({
-          id,
-          name,
-          email,
-          phone,
-        }))}
-        gmailEmail={gmailConnection?.email ?? null}
-        protonEmail={protonConnection?.email ?? null}
-        gmailNotice={gmailStatus ? gmailNotices[gmailStatus] ?? null : null}
-        gmailOAuthConfigured={Boolean(
-          process.env.GOOGLE_CLIENT_ID?.trim() &&
-            process.env.GOOGLE_CLIENT_SECRET?.trim() &&
-            process.env.GOOGLE_REDIRECT_URI?.trim(),
-        )}
-      />
 
       <div className="dashboard-content">
         <div className="contact-entry-options">

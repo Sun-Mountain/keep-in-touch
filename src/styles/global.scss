@@ -49,6 +49,22 @@ nav {
   justify-content: flex-end;
 }
 
+.navigation-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  a {
+    color: $primary-text;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}
+
 button {
   background-color: $primary;
   color: $primary-text;
@@ -187,6 +203,79 @@ button {
     margin: 0 0 8px;
     color: $space-indigo;
     font-size: 17px;
+  }
+
+  a {
+    color: $dusty-grape;
+    text-underline-offset: 3px;
+  }
+}
+
+.settings-sections {
+  display: grid;
+  gap: 20px;
+}
+
+.settings-card {
+  padding: 24px;
+  border: 1px solid rgba(74, 78, 105, 0.18);
+  border-radius: 12px;
+  background: $lavender-mist;
+  box-shadow: 0 8px 24px rgba(34, 34, 59, 0.06);
+
+  h2 {
+    margin: 4px 0 8px;
+    color: $space-indigo;
+    font-size: 24px;
+  }
+
+  > p:not(.eyebrow) {
+    color: $grey-olive;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  ol {
+    padding-left: 22px;
+    color: $space-indigo;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  details {
+    margin-top: 12px;
+  }
+
+  summary {
+    color: $dusty-grape;
+    cursor: pointer;
+    text-underline-offset: 3px;
+  }
+}
+
+.settings-provider {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(74, 78, 105, 0.16);
+
+  h3 {
+    margin: 0 0 8px;
+    color: $space-indigo;
+    font-size: 17px;
+  }
+
+  p {
+    color: $grey-olive;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  strong {
+    color: $space-indigo;
+  }
+
+  form {
+    margin: 8px 0;
   }
 
   a {
@@ -993,6 +1082,10 @@ button {
 @media (max-width: 480px) {
   .dashboard-page {
     padding: 32px 16px 48px;
+  }
+
+  .settings-card {
+    padding: 18px;
   }
 
   .contact-outreach {

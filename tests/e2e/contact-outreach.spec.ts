@@ -32,9 +32,18 @@ test("prepares individual personal email and text drafts for selected contacts",
   await page.getByRole("button", { name: "Create your account" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(
+    page.getByRole("heading", { name: "Check in with your contacts" }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(page).toHaveURL(/\/dashboard\/settings$/);
+  await expect(
     page.getByLabel("Proton custom-domain email address"),
   ).toBeVisible();
   await expect(page.getByLabel("Proton SMTP token")).toHaveAttribute("type", "password");
+  await expect(page.getByRole("heading", { name: "Phone SMS" })).toBeVisible();
+  await expect(page.getByText(/your device’s messaging app/)).toBeVisible();
+  await page.getByRole("link", { name: "Your circle" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
 
   await page.getByText("A new connection", { exact: true }).click();
   await page.getByLabel("Name", { exact: true }).fill("Jamie Taylor");
@@ -46,6 +55,8 @@ test("prepares individual personal email and text drafts for selected contacts",
   await page.getByLabel("Postal code").fill("12345");
   await page.getByRole("button", { name: "Add to your circle" }).click();
   await expect(page.getByRole("heading", { name: "Jamie Taylor" })).toBeVisible();
+  await page.getByRole("link", { name: "Email and text" }).click();
+  await expect(page).toHaveURL(/\/dashboard\/outreach$/);
 
   await page.getByRole("checkbox", { name: "Select Jamie Taylor" }).check();
   await page.getByRole("button", { name: "Prepare email drafts" }).click();

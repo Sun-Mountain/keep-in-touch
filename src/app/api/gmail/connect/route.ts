@@ -10,10 +10,10 @@ import {
 const STATE_COOKIE = "gmail_oauth_state";
 const CALLBACK_PATH = "/api/gmail/callback";
 
-function dashboardRedirect(status: string) {
+function settingsRedirect(status: string) {
   const appUrl = process.env.BETTER_AUTH_URL;
   if (!appUrl) throw new Error("BETTER_AUTH_URL must be set.");
-  const url = new URL("/dashboard", appUrl);
+  const url = new URL("/dashboard/settings", appUrl);
   url.searchParams.set("gmail", status);
   return Response.redirect(url, 303);
 }
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   try {
     const config = getGoogleOAuthConfig();
-    if (!config) return dashboardRedirect("not_configured");
+    if (!config) return settingsRedirect("not_configured");
 
     const state = randomBytes(32).toString("base64url");
     const cookieStore = await cookies();
@@ -44,6 +44,6 @@ export async function GET(request: Request) {
   } catch (error) {
     if (!(error instanceof GmailOAuthError)) throw error;
     console.error("Could not start Gmail authorization.", error);
-    return dashboardRedirect("error");
+    return settingsRedirect("error");
   }
 }
