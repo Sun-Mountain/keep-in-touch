@@ -5,6 +5,7 @@ import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
 import { auth } from "@/lib/auth";
+import { decryptContactDetails } from "@/lib/contact-crypto";
 import { db } from "@/lib/db";
 
 function initials(name: string) {
@@ -20,10 +21,14 @@ export default async function Dashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/");
 
-  const contacts = await db.contact.findMany({
+  const storedContacts = await db.contact.findMany({
     where: { userId: session.user.id },
     orderBy: { updatedAt: "desc" },
   });
+  const contacts = storedContacts.map((contact) => ({
+    ...contact,
+    ...decryptContactDetails(contact),
+  }));
 
   return (
     <div className="dashboard-page">

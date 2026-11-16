@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import {
+  decryptContactDetails,
+  encryptedContactStorageData,
+  type ContactDetails,
+} from "@/lib/contact-crypto";
+import {
   ContactImportInputError,
   MAX_CONTACT_IMPORT_BYTES,
   fetchGoogleSheetCsv,
@@ -14,22 +19,7 @@ import {
 } from "@/lib/contact-spreadsheet";
 import { db } from "@/lib/db";
 
-type ContactCreateData = {
-  name: string;
-  email: string | null;
-  phone: string | null;
-  birthday: Date | null;
-  familyMembers: string | null;
-  addressLine1: string;
-  addressLine2: string | null;
-  addressCity: string;
-  addressRegion: string;
-  addressPostalCode: string;
-  addressCountry: string | null;
-  company: string | null;
-  notes: string | null;
-  userId: string;
-};
+type ContactCreateData = ContactDetails & { userId: string };
 
 type ValidContact = ContactCreateData & { rowNumber: number };
 
@@ -78,19 +68,22 @@ export async function addContact(formData: FormData) {
 
   await db.contact.create({
     data: {
-      name,
-      email: email || null,
-      phone: phone || null,
-      birthday,
-      familyMembers: getText(formData, "familyMembers") || null,
-      addressLine1,
-      addressLine2: addressLine2 || null,
-      addressCity,
-      addressRegion,
-      addressPostalCode,
-      addressCountry: addressCountry || null,
-      company: getText(formData, "company") || null,
-      notes: getText(formData, "notes") || null,
+      ...encryptedContactStorageData({
+        name,
+        email: email || null,
+        phone: phone || null,
+        birthday,
+        familyMembers: getText(formData, "familyMembers") || null,
+        addressLine1,
+        addressLine2: addressLine2 || null,
+        addressCity,
+        addressRegion,
+        addressPostalCode,
+        addressCountry: addressCountry || null,
+        company: getText(formData, "company") || null,
+        notes: getText(formData, "notes") || null,
+        lastContact: null,
+      }),
       userId,
     },
   });
@@ -138,22 +131,31 @@ export async function updateContact(
     }
   }
 
+  const existingContact = await db.contact.findFirst({ where: { id, userId } });
+  if (!existingContact) {
+    return { error: "That contact could not be found.", success: false };
+  }
+  const existingDetails = decryptContactDetails(existingContact);
+
   const result = await db.contact.updateMany({
     where: { id, userId },
     data: {
-      name,
-      email: email || null,
-      phone: phone || null,
-      birthday,
-      familyMembers: getText(formData, "familyMembers") || null,
-      addressLine1,
-      addressLine2: addressLine2 || null,
-      addressCity,
-      addressRegion,
-      addressPostalCode,
-      addressCountry: addressCountry || null,
-      company: getText(formData, "company") || null,
-      notes: getText(formData, "notes") || null,
+      ...encryptedContactStorageData({
+        name,
+        email: email || null,
+        phone: phone || null,
+        birthday,
+        familyMembers: getText(formData, "familyMembers") || null,
+        addressLine1,
+        addressLine2: addressLine2 || null,
+        addressCity,
+        addressRegion,
+        addressPostalCode,
+        addressCountry: addressCountry || null,
+        company: getText(formData, "company") || null,
+        notes: getText(formData, "notes") || null,
+        lastContact: existingDetails.lastContact,
+      }),
     },
   });
   if (result.count === 0) {
@@ -178,7 +180,7 @@ function normalizeName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function duplicateKeys(contact: Pick<ContactCreateData, "name" | "email" | "phone">) {
+function duplicateKeys(contact: Pick<ContactDetails, "name" | "email" | "phone">) {
   const name = normalizeName(contact.name);
   const keys: string[] = [];
   if (contact.email) keys.push(`${name}\u0000email:${contact.email.trim().toLowerCase()}`);
@@ -282,6 +284,7 @@ export async function importContacts(
       addressCountry: row.addressCountry || null,
       company: row.company || null,
       notes: row.notes || null,
+      lastContact: null,
       userId,
     });
   }
@@ -290,9 +293,12 @@ export async function importContacts(
   if (validContacts.length > 0) {
     const existingContacts = await db.contact.findMany({
       where: { userId },
-      select: { name: true, email: true, phone: true },
     });
-    const seenKeys = new Set(existingContacts.flatMap(duplicateKeys));
+    const seenKeys = new Set(
+      existingContacts.flatMap((contact) =>
+        duplicateKeys(decryptContactDetails(contact)),
+      ),
+    );
     contactsToCreate = [];
 
     for (let index = 0; index < validContacts.length; index += 1) {
@@ -323,11 +329,10 @@ export async function importContacts(
         const batch = contactsToCreate.slice(index, index + 500);
         count += (
           await transaction.contact.createMany({
-            data: batch.map((contact) => {
-              const { rowNumber, ...contactData } = contact;
-              void rowNumber;
-              return contactData;
-            }),
+            data: batch.map((contact) => ({
+              ...encryptedContactStorageData(contact),
+              userId: contact.userId,
+            })),
           })
         ).count;
       }

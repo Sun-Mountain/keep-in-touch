@@ -67,6 +67,7 @@ model Verification {
 model Contact {
   id                String    @id @default(cuid())
   name              String
+  encryptedData     String?   @db.Text
   email             String?
   phone             String?
   birthday          DateTime? @db.Date
