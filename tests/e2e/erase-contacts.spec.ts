@@ -42,7 +42,7 @@ test("shows the erase button only in development and erases the signed-in user's
   await expect(eraseButton).toBeVisible();
   await page.getByText("A new connection", { exact: true }).click();
   await page.getByLabel("Name", { exact: true }).fill("Playwright Contact");
-  await page.getByLabel("Email", { exact: true }).fill("contact@example.test");
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill("contact@example.test");
   await page.getByLabel("Street address").fill("123 Test Street");
   await page.getByLabel("City").fill("Testville");
   await page.getByLabel("State / province / region").fill("Test State");
