@@ -4,6 +4,7 @@ import { deleteContact } from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
+import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
 import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { decryptContactDetails } from "@/lib/contact-crypto";
@@ -146,6 +147,7 @@ export default async function Dashboard() {
     ...decryptContactDetails(contact),
   }));
   const contactGroups = groupContactsByAddress(contacts);
+  const addressCount = contactGroups.filter((group) => group.key !== null).length;
 
   return (
     <div className="dashboard-page">
@@ -173,12 +175,22 @@ export default async function Dashboard() {
             </summary>
             <ContactForm />
           </details>
+          {process.env.NODE_ENV === "development" && (
+            <aside className="development-tools" aria-label="Development tools">
+              <p className="eyebrow">Development only</p>
+              <p>Erase contacts belonging to your account.</p>
+              <EraseContactsButton />
+            </aside>
+          )}
         </div>
 
         <section className="contacts-section" aria-labelledby="contacts-title">
           <div className="contacts-heading">
             <h2 id="contacts-title">Your people</h2>
             <span>{contacts.length}</span>
+            <p className="address-count">
+              {addressCount} unique {addressCount === 1 ? "address" : "addresses"}
+            </p>
           </div>
           {contacts.length === 0 ? (
             <div className="empty-contacts">

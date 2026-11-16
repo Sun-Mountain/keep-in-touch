@@ -31,9 +31,20 @@ Invalid rows and duplicates are skipped and reported. A row is considered a dupl
 - `pnpm dev` — start the development server
 - `pnpm build` — generate Prisma Client and build the app
 - `pnpm lint` — lint the project
+- `pnpm test:e2e` — run Playwright tests in development
+- `PLAYWRIGHT_ENV=production pnpm test:e2e` — run Playwright tests against a production build
 - `pnpm db:generate` — generate Prisma Client
 - `pnpm db:migrate` — create and apply a development migration
 - `pnpm db:push` — sync the schema without creating a migration
 - `pnpm db:studio` — open Prisma Studio
 
 The example connection string assumes a local PostgreSQL database named `keep_in_touch` with user and password `postgres`. Update it to match your local or hosted PostgreSQL credentials. The Prisma schema uses the PostgreSQL provider.
+
+Playwright tests require a separate disposable PostgreSQL database whose name ends in `_e2e`. For example:
+
+```sh
+PLAYWRIGHT_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/keep_in_touch_e2e" pnpm test:e2e
+PLAYWRIGHT_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/keep_in_touch_e2e" PLAYWRIGHT_ENV=production pnpm test:e2e
+```
+
+The test runner applies migrations to this database and removes its temporary users after each test. It refuses database names that do not end in `_e2e`.

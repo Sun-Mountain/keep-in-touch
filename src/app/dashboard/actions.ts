@@ -687,3 +687,13 @@ export async function deleteContact(formData: FormData) {
   await db.contact.deleteMany({ where: { id, userId } });
   revalidatePath("/dashboard");
 }
+
+export async function eraseContacts() {
+  if (process.env.NODE_ENV !== "development") {
+    throw new Error("Erasing contacts is only available in development.");
+  }
+
+  const userId = await getUserId();
+  await db.contact.deleteMany({ where: { userId } });
+  revalidatePath("/dashboard");
+}

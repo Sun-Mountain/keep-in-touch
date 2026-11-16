@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results
+.next-playwright
+.next-playwright-tests
 
 # next.js
 /.next/
