@@ -20,6 +20,7 @@ model User {
   contacts         Contact[]
   gmailConnection  GmailConnection?
   protonConnection ProtonConnection?
+  mailingLists     MailingList[]
 }
 
 model GmailConnection {
@@ -87,12 +88,12 @@ model Verification {
 }
 
 model Contact {
-  id                String    @id @default(cuid())
+  id                String               @id @default(cuid())
   name              String
-  encryptedData     String?   @db.Text
+  encryptedData     String?              @db.Text
   email             String?
   phone             String?
-  birthday          DateTime? @db.Date
+  birthday          DateTime?            @db.Date
   familyMembers     String?
   addressLine1      String?
   addressLine2      String?
@@ -103,10 +104,35 @@ model Contact {
   company           String?
   notes             String?
   lastContact       DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   userId            String
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mailingLists      MailingListContact[]
 
   @@index([userId, updatedAt])
+}
+
+model MailingList {
+  id             String               @id @default(cuid())
+  userId         String
+  name           String
+  normalizedName String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members        MailingListContact[]
+
+  @@unique([userId, normalizedName])
+  @@index([userId, createdAt])
+}
+
+model MailingListContact {
+  mailingListId String
+  contactId     String
+  mailingList   MailingList @relation(fields: [mailingListId], references: [id], onDelete: Cascade)
+  contact       Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([mailingListId, contactId])
+  @@index([contactId])
 }

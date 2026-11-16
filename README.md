@@ -30,6 +30,10 @@ Invalid rows and duplicates are skipped and reported. A row is considered a dupl
 
 On the dashboard's **Email and text** page, select up to 25 contacts to send separate, personalized update-check emails or open individual drafts in your personal email app. Text messages open as drafts in your device's messaging app, so they use your personal number and are never sent by the server.
 
+## Mailing lists
+
+On the dashboard, select contacts with complete mailing addresses to save a reusable, named mailing list. Lists are private to your account, and deleting a contact removes it from any saved lists. Expand a saved list to review its people, print address labels, or delete the list. People sharing the same normalized mailing address are grouped onto one label.
+
 Use **Settings** to connect email accounts. To send email through Gmail, create a Google OAuth web client, enable the Gmail API, configure the OAuth consent screen, and add `http://localhost:3000/api/gmail/callback` (or your deployed callback URL) as an authorized redirect URI. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` on the server. Gmail sending uses the `gmail.send` permission; Google's app verification or test-user restrictions may apply. Refresh tokens are encrypted at rest with `CONTACT_ENCRYPTION_KEY`. Disconnecting in the app removes the stored token; you can also revoke access in your Google account settings.
 
 For Proton Mail, the Settings page also supports direct sending through [Proton SMTP](https://proton.me/support/smtp-submission) for paid plans using a custom-domain address. Generate an SMTP token in Proton Mail under **Settings → All settings → IMAP/SMTP → SMTP tokens**, then connect the address and token in the app. The token is encrypted at rest with `CONTACT_ENCRYPTION_KEY`. The app uses Proton's SMTP submission endpoint on port 587; the application server must allow outbound SMTP. Proton SMTP-submitted messages are not end-to-end encrypted. Proton SMTP tokens do not support regular `@proton.me` addresses.
