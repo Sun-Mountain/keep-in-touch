@@ -12,6 +12,12 @@ A private contacts app built with Next.js App Router, Prisma 7, PostgreSQL, and 
 
 Open [http://localhost:3000](http://localhost:3000), create an account, and add people to your circle. Email/password authentication is handled by Better Auth, and each contact is scoped to its owner.
 
+## Import contacts
+
+From the dashboard, import an `.xlsx` or `.csv` file, or paste a public/published Google Sheets link. Imports read the first worksheet and expect the headers in the downloadable CSV template. Each row needs a name and a mailing address (street, city, region, and postal code; country is optional). Email and phone are optional; imported contacts without both are marked as missing important info. Birthday values should use `YYYY-MM-DD` or a spreadsheet date cell.
+
+Invalid rows and duplicates are skipped and reported. A row is considered a duplicate when its normalized name and either its email or phone number match an existing contact. Imports are limited to 5,000 rows and 4 MB per spreadsheet.
+
 ## Useful commands
 
 - `pnpm dev` — start the development server

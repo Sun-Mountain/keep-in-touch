@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { addContact, deleteContact } from "@/app/dashboard/actions";
-import { SignOutButton } from "@/components/sign-out-button";
+import { deleteContact } from "@/app/dashboard/actions";
+import { ContactImportForm } from "@/app/dashboard/contact-import-form";
+import { ContactForm } from "@/app/dashboard/contact-form";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -26,8 +26,121 @@ export default async function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <div className="content">
+      <header className="dashboard-header">
+        <div>
+          <p className="eyebrow">The people who matter</p>
+          <h1>Your circle</h1>
+        </div>
+        <p>Keep the little details close, so staying in touch feels natural.</p>
+      </header>
 
+      <div className="dashboard-content">
+        <div className="contact-entry-options">
+          <section className="add-contact-panel" aria-labelledby="add-contact-title">
+            <div className="panel-heading">
+              <p className="eyebrow">A new connection</p>
+              <h2 id="add-contact-title">Add a person</h2>
+            </div>
+            <ContactForm />
+          </section>
+          <section className="add-contact-panel import-contact-panel" aria-labelledby="import-contacts-title">
+            <div className="panel-heading">
+              <p className="eyebrow">Bring your people together</p>
+              <h2 id="import-contacts-title">Import contacts</h2>
+            </div>
+            <ContactImportForm />
+          </section>
+        </div>
+
+        <section className="contacts-section" aria-labelledby="contacts-title">
+          <div className="contacts-heading">
+            <h2 id="contacts-title">Your people</h2>
+            <span>{contacts.length}</span>
+          </div>
+          {contacts.length === 0 ? (
+            <div className="empty-contacts">
+              <p>Your circle is ready to grow.</p>
+              <span>Add someone to keep their details in one thoughtful place.</span>
+            </div>
+          ) : (
+            <ul className="contact-list">
+              {contacts.map((contact) => {
+                const familyMembers = contact.familyMembers
+                  ?.split(/\r?\n/)
+                  .map((member) => member.trim())
+                  .filter(Boolean);
+                const address = [
+                  contact.addressLine1,
+                  contact.addressLine2,
+                  [contact.addressCity, contact.addressRegion, contact.addressPostalCode]
+                    .filter(Boolean)
+                    .join(", "),
+                  contact.addressCountry,
+                ].filter(Boolean);
+
+                return (
+                  <li className="contact-card" key={contact.id}>
+                    <div className="contact-card-heading">
+                      <div className="contact-avatar" aria-hidden="true">{initials(contact.name)}</div>
+                      <div>
+                        <h3>{contact.name}</h3>
+                        {contact.company && <p>{contact.company}</p>}
+                        {!contact.email && !contact.phone && (
+                          <span className="missing-info-badge">Important info missing</span>
+                        )}
+                      </div>
+                      <form action={deleteContact}>
+                        <input name="id" type="hidden" value={contact.id} />
+                        <button className="remove-contact-button" type="submit">Remove</button>
+                      </form>
+                    </div>
+
+                    {(contact.email || contact.phone || contact.birthday || familyMembers?.length || address.length || contact.notes) && (
+                      <dl className="contact-details">
+                        {contact.email && (
+                          <>
+                            <dt>Email</dt>
+                            <dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+                          </>
+                        )}
+                        {contact.phone && (
+                          <>
+                            <dt>Phone</dt>
+                            <dd><a href={`tel:${contact.phone}`}>{contact.phone}</a></dd>
+                          </>
+                        )}
+                        {contact.birthday && (
+                          <>
+                            <dt>Birthday</dt>
+                            <dd>{contact.birthday.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}</dd>
+                          </>
+                        )}
+                        {familyMembers && familyMembers.length > 0 && (
+                          <>
+                            <dt>Family</dt>
+                            <dd>{familyMembers.join(", ")}</dd>
+                          </>
+                        )}
+                        {address.length > 0 && (
+                          <>
+                            <dt>Address</dt>
+                            <dd>{address.map((line, index) => <span key={index}>{line}</span>)}</dd>
+                          </>
+                        )}
+                        {contact.notes && (
+                          <>
+                            <dt>Notes</dt>
+                            <dd>{contact.notes}</dd>
+                          </>
+                        )}
+                      </dl>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
     </div>
   );

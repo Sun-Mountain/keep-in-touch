@@ -59,22 +59,31 @@ model Verification {
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
 
   @@index([identifier])
 }
 
 model Contact {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?
-  company     String?
-  notes       String?
-  lastContact DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String    @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  birthday          DateTime? @db.Date
+  familyMembers     String?
+  addressLine1      String?
+  addressLine2      String?
+  addressCity       String?
+  addressRegion     String?
+  addressPostalCode String?
+  addressCountry    String?
+  company           String?
+  notes             String?
+  lastContact       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, updatedAt])
 }
