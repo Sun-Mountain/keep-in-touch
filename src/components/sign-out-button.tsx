@@ -15,7 +15,7 @@ export function SignOutButton() {
       setError(signOutError.message ?? "Could not sign out. Please try again.");
       return;
     }
-    router.push("/");
+    router.push("/admin");
     router.refresh();
   }
 

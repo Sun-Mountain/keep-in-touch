@@ -10,7 +10,7 @@ export default async function Home() {
   if (session) redirect("/dashboard");
 
   return (
-    <main className="auth-page">
+    <div className="content-container">
       <section className="auth-intro">
         <Link className="wordmark" href="/">
           <span className="brand-mark" aria-hidden="true">k</span>
@@ -33,6 +33,6 @@ export default async function Home() {
       <section className="auth-panel">
         <AuthForm />
       </section>
-    </main>
+    </div>
   );
 }

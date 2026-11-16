@@ -1,0 +1,130 @@
+$lavender-mist: rgba(247, 240, 245, 1);
+$pale-oak: rgba(222, 203, 183, 1);
+$grey-olive: rgba(143, 133, 125, 1);
+$stone-brown: rgba(92, 85, 82, 1);
+$deep-mocha: rgba(67, 54, 51, 1);
+$black: rgba(10, 9, 8, 1);
+$jet-black: rgba(34, 51, 59, 1);
+$almond-cream: rgba(234, 224, 213, 1);
+$khaki-beige: rgba(198, 172, 143, 1);
+$stone-brown: rgba(94, 80, 63, 1);
+$space-indigo: rgba(34, 34, 59, 1);
+$dusty-grape: rgba(74, 78, 105, 1);
+$lilac-ash: rgba(154, 140, 152, 1);
+$almond-silk: rgba(201, 173, 167, 1);
+$parchment: rgba(242, 233, 228, 1);
+
+$primary: $dusty-grape; // Buttons and active elements
+$primary-text: $almond-cream; // Primary text color
+$accent: $khaki-beige; // Accent color for highlights
+$background: $lilac-ash; // Background color for the page
+$navigation: $space-indigo; // Navigation bar color
+$secondary: $dusty-grape; // Secondary color for text and borders
+
+$border-color: $secondary;
+$border-radius: 8px;
+$content-bg: $lavender-mist;
+$content-h-bg: $secondary;
+$content-h-color: $parchment;
+$font-color: $secondary;
+$font-family: "Geist Sans", sans-serif;
+
+:root {
+  background-color: $background;
+  font-family: $font-family;
+  color: $font-color;
+}
+
+body {
+  margin: 0;
+}
+
+nav {
+  background-color: $navigation;
+  color: $primary-text;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  background-color: $primary;
+  color: $primary-text;
+  border: none;
+  border-radius: $border-radius;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color .2s, box-shadow .2s;
+
+  &:hover {
+    background-color: darken($secondary, 10%);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.center-in-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.content-container {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .content-header {
+    background-color: $content-h-bg;
+    border: 1px solid $border-color;
+    border-radius: $border-radius $border-radius 0 0;
+    color: $content-h-color;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 16px;
+  }
+
+  .content-body {
+    background-color: $content-bg;
+    border: 1px solid $border-color;
+    border-radius: 0 0 $border-radius $border-radius;
+    padding: 16px;
+  }
+}
+
+.form-container {
+  width: 600px;
+  margin: 0 auto;
+}
+
+.auth-form, .contact-form {
+  display: grid;
+
+  .submit-button {
+    margin-top: 20px;
+  }
+}
+
+.auth-form label, .contact-form label {
+  display: grid;
+  gap: 8px;
+  color: #3a4b41;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.auth-form input, .contact-form input, .contact-form textarea {
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid #e3e5dc;
+  border-radius: 5px;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 400;
+  transition: border-color .2s, box-shadow .2s;
+}
