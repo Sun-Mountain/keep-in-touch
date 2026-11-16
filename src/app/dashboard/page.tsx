@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { deleteContact } from "@/app/dashboard/actions";
+import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
 import { auth } from "@/lib/auth";
@@ -36,20 +37,20 @@ export default async function Dashboard() {
 
       <div className="dashboard-content">
         <div className="contact-entry-options">
-          <section className="add-contact-panel" aria-labelledby="add-contact-title">
-            <div className="panel-heading">
-              <p className="eyebrow">A new connection</p>
-              <h2 id="add-contact-title">Add a person</h2>
-            </div>
-            <ContactForm />
-          </section>
-          <section className="add-contact-panel import-contact-panel" aria-labelledby="import-contacts-title">
-            <div className="panel-heading">
+          <details className="add-contact-panel import-contact-panel" name="contact-entry" open>
+            <summary className="panel-heading accordion-heading">
               <p className="eyebrow">Bring your people together</p>
               <h2 id="import-contacts-title">Import contacts</h2>
-            </div>
+            </summary>
             <ContactImportForm />
-          </section>
+          </details>
+          <details className="add-contact-panel" name="contact-entry">
+            <summary className="panel-heading accordion-heading">
+              <p className="eyebrow">A new connection</p>
+              <h2 id="add-contact-title">Add a person</h2>
+            </summary>
+            <ContactForm />
+          </details>
         </div>
 
         <section className="contacts-section" aria-labelledby="contacts-title">
@@ -94,6 +95,24 @@ export default async function Dashboard() {
                         <button className="remove-contact-button" type="submit">Remove</button>
                       </form>
                     </div>
+                    <ContactEditor
+                      contact={{
+                        id: contact.id,
+                        name: contact.name,
+                        email: contact.email,
+                        phone: contact.phone,
+                        birthday: contact.birthday?.toISOString().slice(0, 10) ?? "",
+                        familyMembers: contact.familyMembers,
+                        addressLine1: contact.addressLine1,
+                        addressLine2: contact.addressLine2,
+                        addressCity: contact.addressCity,
+                        addressRegion: contact.addressRegion,
+                        addressPostalCode: contact.addressPostalCode,
+                        addressCountry: contact.addressCountry,
+                        company: contact.company,
+                        notes: contact.notes,
+                      }}
+                    />
 
                     {(contact.email || contact.phone || contact.birthday || familyMembers?.length || address.length || contact.notes) && (
                       <dl className="contact-details">

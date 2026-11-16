@@ -181,7 +181,7 @@ button {
 }
 
 .panel-heading {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 
   h2,
   p {
@@ -192,6 +192,41 @@ button {
     margin-top: 4px;
     color: $space-indigo;
     font-size: 24px;
+  }
+}
+
+.accordion-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::after {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: $parchment;
+    color: $space-indigo;
+    content: "+";
+    font-size: 20px;
+    font-weight: 400;
+  }
+}
+
+.add-contact-panel[open] > .accordion-heading {
+  margin-bottom: 20px;
+
+  &::after {
+    content: "−";
   }
 }
 
@@ -440,6 +475,41 @@ button {
   &:hover {
     background: $parchment;
     box-shadow: none;
+  }
+}
+
+.contact-editor {
+  margin-top: 10px;
+}
+
+.edit-contact-button,
+.cancel-edit-button {
+  padding: 7px 10px;
+  background: transparent;
+  color: $dusty-grape;
+  font-size: 12px;
+
+  &:hover {
+    background: $parchment;
+    box-shadow: none;
+  }
+}
+
+.contact-edit-form {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid rgba(74, 78, 105, 0.14);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.contact-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .submit-button {
+    margin-top: 16px;
   }
 }
 

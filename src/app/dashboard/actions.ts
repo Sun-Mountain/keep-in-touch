@@ -98,6 +98,72 @@ export async function addContact(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+type ContactUpdateState = { error: string; success: boolean };
+
+export async function updateContact(
+  previousState: ContactUpdateState,
+  formData: FormData,
+): Promise<ContactUpdateState> {
+  void previousState;
+  const userId = await getUserId();
+  const id = getText(formData, "id");
+  const name = getText(formData, "name");
+  const email = getText(formData, "email");
+  const phone = getText(formData, "phone");
+  const birthdayValue = getText(formData, "birthday");
+  const addressLine1 = getText(formData, "addressLine1");
+  const addressLine2 = getText(formData, "addressLine2");
+  const addressCity = getText(formData, "addressCity");
+  const addressRegion = getText(formData, "addressRegion");
+  const addressPostalCode = getText(formData, "addressPostalCode");
+  const addressCountry = getText(formData, "addressCountry");
+
+  if (!id) return { error: "A contact id is required.", success: false };
+  if (!name) return { error: "A contact name is required.", success: false };
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Enter a valid email address.", success: false };
+  }
+  if (!addressLine1 || !addressCity || !addressRegion || !addressPostalCode) {
+    return { error: "Complete the required mailing address fields.", success: false };
+  }
+
+  let birthday: Date | null = null;
+  if (birthdayValue) {
+    birthday = new Date(`${birthdayValue}T00:00:00.000Z`);
+    if (
+      Number.isNaN(birthday.getTime()) ||
+      birthday.toISOString().slice(0, 10) !== birthdayValue
+    ) {
+      return { error: "Enter a valid birthday.", success: false };
+    }
+  }
+
+  const result = await db.contact.updateMany({
+    where: { id, userId },
+    data: {
+      name,
+      email: email || null,
+      phone: phone || null,
+      birthday,
+      familyMembers: getText(formData, "familyMembers") || null,
+      addressLine1,
+      addressLine2: addressLine2 || null,
+      addressCity,
+      addressRegion,
+      addressPostalCode,
+      addressCountry: addressCountry || null,
+      company: getText(formData, "company") || null,
+      notes: getText(formData, "notes") || null,
+    },
+  });
+  if (result.count === 0) {
+    return { error: "That contact could not be found.", success: false };
+  }
+
+  revalidatePath("/dashboard");
+  return { error: "", success: true };
+}
+
 function parseSpreadsheetBirthday(value: string): Date | null | undefined {
   if (!value) return null;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
