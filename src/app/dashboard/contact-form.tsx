@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 import { addContact } from "./actions";
+import type { AddContactState } from "./actions";
+import { ContactUpdateConfirmation } from "./contact-update-confirmation";
+
+const initialState: AddContactState = { status: "idle" };
 
 export function ContactForm() {
+  const [state, formAction, isPending] = useActionState(addContact, initialState);
   const [contactMethodError, setContactMethodError] = useState("");
+  const [manualUpdateComplete, setManualUpdateComplete] = useState(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const formData = new FormData(event.currentTarget);
@@ -18,10 +24,12 @@ export function ContactForm() {
     }
 
     setContactMethodError("");
+    setManualUpdateComplete(false);
   }
 
   return (
-    <form action={addContact} className="contact-form" onSubmit={handleSubmit}>
+    <>
+    <form action={formAction} className="contact-form" onSubmit={handleSubmit}>
       <label>
         Name
         <input autoComplete="name" name="name" placeholder="Alex Morgan" required />
@@ -108,7 +116,38 @@ export function ContactForm() {
         <textarea name="notes" placeholder="Anything you would like to remember" rows={3} />
       </label>
 
-      <button className="submit-button" type="submit">Add to your circle</button>
+      <button className="submit-button" disabled={isPending} type="submit">
+        {isPending ? "Checking..." : "Add to your circle"}
+      </button>
     </form>
+    {state.status === "error" && (
+      <p className="contact-form-error" role="alert">{state.message}</p>
+    )}
+    {state.status === "duplicate" && (
+      <p className="contact-duplicate-notice" role="status">{state.message}</p>
+    )}
+    {state.status === "complete" && (
+      <p className="contact-update-success" role="status">{state.message}</p>
+    )}
+    {state.status === "confirm-update" && (
+      <div className="contact-duplicate-notice">
+        <p role="status">{state.message}</p>
+        {manualUpdateComplete ? (
+          <p className="contact-update-success" role="status">
+            Contact information updated.
+          </p>
+        ) : (
+          state.candidates.map((candidate) => (
+            <ContactUpdateConfirmation
+              candidate={candidate}
+              contact={state.contact}
+              key={candidate.id}
+              onUpdated={() => setManualUpdateComplete(true)}
+            />
+          ))
+        )}
+      </div>
+    )}
+    </>
   );
 }

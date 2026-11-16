@@ -244,8 +244,6 @@ button {
 }
 
 .contact-form {
-  width: 100%;
-
   input,
   textarea {
     box-sizing: border-box;
@@ -323,6 +321,69 @@ button {
 
 .contact-import-error {
   color: #a33;
+}
+
+.contact-duplicate-notice,
+.contact-import-updates {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(74, 78, 105, 0.18);
+  border-radius: 8px;
+  background: rgba(198, 172, 143, 0.12);
+  color: $space-indigo;
+  font-size: 13px;
+  line-height: 1.5;
+
+  > p:first-child {
+    margin: 0 0 8px;
+  }
+}
+
+.contact-import-update {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(74, 78, 105, 0.14);
+
+  h3,
+  p {
+    margin: 0 0 8px;
+  }
+
+  h3 {
+    font-size: 14px;
+  }
+}
+
+.contact-update-confirmation {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(74, 78, 105, 0.14);
+  border-radius: 6px;
+  background: #fff;
+
+  > p {
+    margin: 0 0 8px;
+    overflow-wrap: anywhere;
+  }
+}
+
+.contact-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .submit-button,
+  .cancel-edit-button {
+    margin: 0;
+  }
+}
+
+.contact-update-success,
+.contact-update-skipped {
+  margin: 8px 0 0;
+  color: $space-indigo;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .contact-import-warning {
@@ -425,6 +486,60 @@ button {
 
 .contact-card {
   padding: 20px;
+}
+
+.shared-address-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.shared-address-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid rgba(74, 78, 105, 0.14);
+  background: rgba(198, 172, 143, 0.12);
+
+  .eyebrow {
+    margin: 0 0 8px;
+  }
+
+  address {
+    color: $space-indigo;
+    font-size: 14px;
+    font-style: normal;
+    line-height: 1.5;
+
+    span {
+      display: block;
+    }
+  }
+}
+
+.shared-address-count {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: $parchment;
+  color: $space-indigo;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shared-contact-people {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shared-contact-person {
+  padding: 20px;
+
+  & + & {
+    border-top: 1px solid rgba(74, 78, 105, 0.14);
+  }
 }
 
 .contact-card-heading {
@@ -582,6 +697,15 @@ button {
 
   .add-contact-panel,
   .contact-card {
+    padding: 18px;
+  }
+
+  .shared-address-card {
+    padding: 0;
+  }
+
+  .shared-address-heading,
+  .shared-contact-person {
     padding: 18px;
   }
 }

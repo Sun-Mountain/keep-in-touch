@@ -10,7 +10,7 @@ A private contacts app built with Next.js App Router, Prisma 7, PostgreSQL, and 
 4. Create/update the database schema with `pnpm db:migrate`.
 5. Start the app with `pnpm dev`.
 
-Open [http://localhost:3000](http://localhost:3000), create an account, and add people to your circle. Email/password authentication is handled by Better Auth, and each contact is scoped to its owner.
+Open [http://localhost:3000](http://localhost:3000), create an account, and add people to your circle. Email/password authentication is handled by Better Auth, and each contact is scoped to its owner. Contacts with the same complete mailing address appear together in a shared card, while each person's details and edit/remove controls remain separate.
 
 ## Contact-data encryption
 

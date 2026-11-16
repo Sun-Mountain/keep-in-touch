@@ -16,6 +16,7 @@ export type ContactImportState =
       additionalIssues: number;
       warnings: string[];
       additionalWarnings: number;
+      pendingUpdates: ContactImportUpdate[];
     };
 
 export type SpreadsheetContactRow = {
@@ -33,6 +34,20 @@ export type SpreadsheetContactRow = {
   addressCountry: string;
   company: string;
   notes: string;
+};
+
+export type ContactInputValues = Omit<SpreadsheetContactRow, "rowNumber">;
+
+export type ContactMatchCandidate = {
+  id: string;
+  description: string;
+  expectedUpdatedAt: string;
+};
+
+export type ContactImportUpdate = {
+  rowNumber: number;
+  contact: ContactInputValues;
+  candidates: ContactMatchCandidate[];
 };
 
 type ContactField = Exclude<keyof SpreadsheetContactRow, "rowNumber">;

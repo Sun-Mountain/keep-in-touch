@@ -4,9 +4,14 @@ import { deleteContact } from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
+import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { decryptContactDetails } from "@/lib/contact-crypto";
+import type { ContactDetails } from "@/lib/contact-crypto";
+import { groupContactsByAddress } from "@/lib/contact-grouping.js";
 import { db } from "@/lib/db";
+
+type DashboardContact = Contact & ContactDetails;
 
 function initials(name: string) {
   return name
@@ -15,6 +20,117 @@ function initials(name: string) {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+function contactAddress(contact: ContactDetails) {
+  return [
+    contact.addressLine1,
+    contact.addressLine2,
+    [contact.addressCity, contact.addressRegion, contact.addressPostalCode]
+      .filter(Boolean)
+      .join(", "),
+    contact.addressCountry,
+  ].filter(Boolean);
+}
+
+function ContactPerson({
+  contact,
+  showAddress,
+}: {
+  contact: DashboardContact;
+  showAddress: boolean;
+}) {
+  const familyMembers = contact.familyMembers
+    ?.split(/\r?\n/)
+    .map((member) => member.trim())
+    .filter(Boolean);
+  const address = showAddress ? contactAddress(contact) : [];
+  const hasDetails = Boolean(
+    contact.email ||
+      contact.phone ||
+      contact.birthday ||
+      familyMembers?.length ||
+      address.length ||
+      contact.notes,
+  );
+
+  return (
+    <li className={showAddress ? "contact-card" : "shared-contact-person"}>
+      <div className="contact-card-heading">
+        <div className="contact-avatar" aria-hidden="true">{initials(contact.name)}</div>
+        <div>
+          <h3>{contact.name}</h3>
+          {contact.company && <p>{contact.company}</p>}
+          {!contact.email && !contact.phone && (
+            <span className="missing-info-badge">Important info missing</span>
+          )}
+        </div>
+        <form action={deleteContact}>
+          <input name="id" type="hidden" value={contact.id} />
+          <button className="remove-contact-button" type="submit">Remove</button>
+        </form>
+      </div>
+      <ContactEditor
+        contact={{
+          id: contact.id,
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          birthday: contact.birthday?.toISOString().slice(0, 10) ?? "",
+          familyMembers: contact.familyMembers,
+          addressLine1: contact.addressLine1,
+          addressLine2: contact.addressLine2,
+          addressCity: contact.addressCity,
+          addressRegion: contact.addressRegion,
+          addressPostalCode: contact.addressPostalCode,
+          addressCountry: contact.addressCountry,
+          company: contact.company,
+          notes: contact.notes,
+        }}
+      />
+
+      {hasDetails && (
+        <dl className="contact-details">
+          {contact.email && (
+            <>
+              <dt>Email</dt>
+              <dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+            </>
+          )}
+          {contact.phone && (
+            <>
+              <dt>Phone</dt>
+              <dd><a href={`tel:${contact.phone}`}>{contact.phone}</a></dd>
+            </>
+          )}
+          {contact.birthday && (
+            <>
+              <dt>Birthday</dt>
+              <dd>{contact.birthday.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}</dd>
+            </>
+          )}
+          {familyMembers && familyMembers.length > 0 && (
+            <>
+              <dt>Family</dt>
+              <dd>{familyMembers.join(", ")}</dd>
+            </>
+          )}
+          {address.length > 0 && (
+            <>
+              <dt>Address</dt>
+              <dd>{address.map((line, index) => <span key={index}>{line}</span>)}</dd>
+            </>
+          )}
+          {contact.notes && (
+            <>
+              <dt>Notes</dt>
+              <dd>{contact.notes}</dd>
+            </>
+          )}
+        </dl>
+      )}
+    </li>
+  );
 }
 
 export default async function Dashboard() {
@@ -29,6 +145,7 @@ export default async function Dashboard() {
     ...contact,
     ...decryptContactDetails(contact),
   }));
+  const contactGroups = groupContactsByAddress(contacts);
 
   return (
     <div className="dashboard-page">
@@ -70,95 +187,39 @@ export default async function Dashboard() {
             </div>
           ) : (
             <ul className="contact-list">
-              {contacts.map((contact) => {
-                const familyMembers = contact.familyMembers
-                  ?.split(/\r?\n/)
-                  .map((member) => member.trim())
-                  .filter(Boolean);
-                const address = [
-                  contact.addressLine1,
-                  contact.addressLine2,
-                  [contact.addressCity, contact.addressRegion, contact.addressPostalCode]
-                    .filter(Boolean)
-                    .join(", "),
-                  contact.addressCountry,
-                ].filter(Boolean);
-
-                return (
-                  <li className="contact-card" key={contact.id}>
-                    <div className="contact-card-heading">
-                      <div className="contact-avatar" aria-hidden="true">{initials(contact.name)}</div>
-                      <div>
-                        <h3>{contact.name}</h3>
-                        {contact.company && <p>{contact.company}</p>}
-                        {!contact.email && !contact.phone && (
-                          <span className="missing-info-badge">Important info missing</span>
-                        )}
-                      </div>
-                      <form action={deleteContact}>
-                        <input name="id" type="hidden" value={contact.id} />
-                        <button className="remove-contact-button" type="submit">Remove</button>
-                      </form>
-                    </div>
-                    <ContactEditor
-                      contact={{
-                        id: contact.id,
-                        name: contact.name,
-                        email: contact.email,
-                        phone: contact.phone,
-                        birthday: contact.birthday?.toISOString().slice(0, 10) ?? "",
-                        familyMembers: contact.familyMembers,
-                        addressLine1: contact.addressLine1,
-                        addressLine2: contact.addressLine2,
-                        addressCity: contact.addressCity,
-                        addressRegion: contact.addressRegion,
-                        addressPostalCode: contact.addressPostalCode,
-                        addressCountry: contact.addressCountry,
-                        company: contact.company,
-                        notes: contact.notes,
-                      }}
+              {contactGroups.map((group) => {
+                if (group.contacts.length === 1) {
+                  const contact = group.contacts[0];
+                  return (
+                    <ContactPerson
+                      contact={contact}
+                      key={contact.id}
+                      showAddress
                     />
+                  );
+                }
 
-                    {(contact.email || contact.phone || contact.birthday || familyMembers?.length || address.length || contact.notes) && (
-                      <dl className="contact-details">
-                        {contact.email && (
-                          <>
-                            <dt>Email</dt>
-                            <dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
-                          </>
-                        )}
-                        {contact.phone && (
-                          <>
-                            <dt>Phone</dt>
-                            <dd><a href={`tel:${contact.phone}`}>{contact.phone}</a></dd>
-                          </>
-                        )}
-                        {contact.birthday && (
-                          <>
-                            <dt>Birthday</dt>
-                            <dd>{contact.birthday.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}</dd>
-                          </>
-                        )}
-                        {familyMembers && familyMembers.length > 0 && (
-                          <>
-                            <dt>Family</dt>
-                            <dd>{familyMembers.join(", ")}</dd>
-                          </>
-                        )}
-                        {address.length > 0 && (
-                          <>
-                            <dt>Address</dt>
-                            <dd>{address.map((line, index) => <span key={index}>{line}</span>)}</dd>
-                          </>
-                        )}
-                        {contact.notes && (
-                          <>
-                            <dt>Notes</dt>
-                            <dd>{contact.notes}</dd>
-                          </>
-                        )}
-                      </dl>
-                    )}
+                const sharedAddress = contactAddress(group.contacts[0]);
+                return (
+                  <li className="contact-card shared-address-card" key={group.contacts[0].id}>
+                    <div className="shared-address-heading">
+                      <div>
+                        <p className="eyebrow">Shared mailing address</p>
+                        <address>
+                          {sharedAddress.map((line, index) => <span key={index}>{line}</span>)}
+                        </address>
+                      </div>
+                      <span className="shared-address-count">{group.contacts.length} people</span>
+                    </div>
+                    <ul className="shared-contact-people">
+                      {group.contacts.map((contact) => (
+                        <ContactPerson
+                          contact={contact}
+                          key={contact.id}
+                          showAddress={false}
+                        />
+                      ))}
+                    </ul>
                   </li>
                 );
               })}
