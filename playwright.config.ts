@@ -16,7 +16,7 @@ if (!databaseName.endsWith("_e2e")) {
   throw new Error("PLAYWRIGHT_DATABASE_URL must point to a database ending in _e2e.");
 }
 
-const baseURL = "http://127.0.0.1:4173";
+const baseURL = "http://localhost:4173";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -30,7 +30,9 @@ export default defineConfig({
   webServer: {
     command: [
       "pnpm exec prisma migrate deploy",
-      appEnvironment === "production" ? "pnpm build && pnpm start" : "pnpm dev",
+      appEnvironment === "production"
+        ? "pnpm build && pnpm start --port 4173"
+        : "pnpm dev --port 4173",
     ].join(" && "),
     url: baseURL,
     reuseExistingServer: false,
@@ -41,7 +43,7 @@ export default defineConfig({
       BETTER_AUTH_SECRET: randomBytes(32).toString("base64"),
       CONTACT_ENCRYPTION_KEY: randomBytes(32).toString("base64"),
       NEXT_TELEMETRY_DISABLED: "1",
-      PORT: "4173",
+      PLAYWRIGHT_E2E: "1",
     },
   },
 });
