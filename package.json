@@ -1,15 +1,31 @@
 {
   "name": "keep-in-touch",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "test:contact-crypto": "node --test src/lib/contact-crypto-core.test.mjs",
+    "test:contact-grouping": "node --test src/lib/contact-grouping.test.mjs",
+    "test:contact-duplicates": "node --test src/lib/contact-duplicates.test.mjs",
+    "contacts:encrypt": "node scripts/encrypt-contact-data.mjs"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "better-auth": "^1.2.12",
+    "dotenv": "^16.5.0",
+    "exceljs": "^4.4.0",
     "next": "16.4.6",
+    "pg": "^8.16.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -19,8 +35,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "prisma": "^7.0.0",
     "sass": "^1.100.0",
     "typescript": "^5"
-  },
-  "packageManager": "pnpm@12.11.2"
+  }
 }
