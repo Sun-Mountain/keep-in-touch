@@ -8,6 +8,7 @@ import type { Contact } from "@/generated/prisma/client";
 import {
   decryptContactDetails,
   encryptedContactStorageData,
+  createAddressFingerprint,
   type ContactDetails,
 } from "@/lib/contact-crypto";
 import {
@@ -33,6 +34,7 @@ type ContactCreateData = ContactDetails & { userId: string };
 type ValidContact = ContactCreateData & { rowNumber: number };
 const MAX_CONTACT_UPDATE_CONFIRMATIONS = 20;
 const MAX_CONTACT_MATCH_CANDIDATES = 20;
+const MAX_TAG_NAME_LENGTH = 50;
 
 export type AddContactState =
   | { status: "idle" }
@@ -60,6 +62,90 @@ async function getUserId() {
 function getText(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeTagName(name: string) {
+  return name.normalize("NFKC").replace(/\s+/g, " ").toLowerCase();
+}
+
+export async function createContactTag(formData: FormData) {
+  const userId = await getUserId();
+  const name = getText(formData, "name").normalize("NFKC").replace(/\s+/g, " ");
+  if (!name || name.length > MAX_TAG_NAME_LENGTH) {
+    throw new Error(`A tag name is required and must be ${MAX_TAG_NAME_LENGTH} characters or fewer.`);
+  }
+
+  const normalizedName = normalizeTagName(name);
+  await db.tag.upsert({
+    where: { userId_normalizedName: { userId, normalizedName } },
+    create: { userId, name, normalizedName },
+    update: {},
+  });
+  revalidatePath("/dashboard");
+}
+
+export async function deleteContactTag(formData: FormData) {
+  const userId = await getUserId();
+  const tagId = getText(formData, "tagId");
+  if (!tagId) throw new Error("A tag ID is required.");
+
+  const result = await db.tag.deleteMany({ where: { id: tagId, userId } });
+  if (result.count === 0) throw new Error("That tag could not be found.");
+  revalidatePath("/dashboard");
+}
+
+export async function addAddressTag(formData: FormData) {
+  const userId = await getUserId();
+  const contactId = getText(formData, "contactId");
+  const tagId = getText(formData, "tagId");
+  if (!contactId || !tagId) {
+    throw new Error("A contact and tag are required.");
+  }
+
+  const [contact, tag] = await Promise.all([
+    db.contact.findFirst({ where: { id: contactId, userId } }),
+    db.tag.findFirst({ where: { id: tagId, userId }, select: { id: true } }),
+  ]);
+  if (!contact || !tag) {
+    throw new Error("That contact or tag could not be found.");
+  }
+
+  const addressKey = groupContactsByAddress([decryptContactDetails(contact)])[0]?.key;
+  if (!addressKey) throw new Error("That contact does not have a complete address.");
+  const addressFingerprint = createAddressFingerprint(addressKey);
+  await db.addressTag.upsert({
+    where: {
+      userId_addressFingerprint_tagId: { userId, addressFingerprint, tagId },
+    },
+    create: { userId, addressFingerprint, tagId },
+    update: {},
+  });
+  revalidatePath("/dashboard");
+}
+
+export async function removeAddressTag(formData: FormData) {
+  const userId = await getUserId();
+  const contactId = getText(formData, "contactId");
+  const tagId = getText(formData, "tagId");
+  if (!contactId || !tagId) {
+    throw new Error("A contact and tag are required.");
+  }
+
+  const contact = await db.contact.findFirst({ where: { id: contactId, userId } });
+  if (!contact) throw new Error("That contact could not be found.");
+  const tag = await db.tag.findFirst({ where: { id: tagId, userId }, select: { id: true } });
+  if (!tag) throw new Error("That tag could not be found.");
+
+  const addressKey = groupContactsByAddress([decryptContactDetails(contact)])[0]?.key;
+  if (!addressKey) throw new Error("That contact does not have a complete address.");
+  await db.addressTag.deleteMany({
+    where: {
+      userId,
+      addressFingerprint: createAddressFingerprint(addressKey),
+      tagId,
+    },
+  });
+  revalidatePath("/dashboard");
 }
 
 function mailingAddressChanged(before: ContactDetails, after: ContactDetails) {

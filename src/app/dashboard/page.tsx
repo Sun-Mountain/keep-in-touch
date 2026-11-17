@@ -1,6 +1,12 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { deleteContact } from "@/app/dashboard/actions";
+import {
+  addAddressTag,
+  deleteContact,
+  deleteContactTag,
+  removeAddressTag,
+  createContactTag,
+} from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
@@ -8,11 +14,16 @@ import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
 import { AddressLabelNameEditor } from "@/app/dashboard/address-label-name-editor";
 import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
-import { decryptContactDetails } from "@/lib/contact-crypto";
+import {
+  createAddressFingerprint,
+  decryptContactDetails,
+} from "@/lib/contact-crypto";
 import type { ContactDetails } from "@/lib/contact-crypto";
 import { groupContactsByAddress } from "@/lib/contact-grouping.js";
 import { db } from "@/lib/db";
+import { migrateLegacyContactTags } from "@/lib/address-tag-migration";
 
+type TagOption = { id: string; name: string };
 type DashboardContact = Contact & ContactDetails;
 
 function initials(name: string) {
@@ -35,14 +46,76 @@ function contactAddress(contact: ContactDetails) {
   ].filter(Boolean);
 }
 
+function AddressTagEditor({
+  contactId,
+  tags,
+  availableTags,
+}: {
+  contactId: string;
+  tags: TagOption[];
+  availableTags: TagOption[];
+}) {
+  const addableTags = availableTags.filter(
+    (tag) => !tags.some((addressTag) => addressTag.id === tag.id),
+  );
+
+  return (
+    <div className="contact-tags address-tag-editor">
+      {tags.length > 0 ? (
+        <ul aria-label="Address tags" className="contact-tag-chips">
+          {tags.map((tag) => (
+            <li key={tag.id}>
+              <span>{tag.name}</span>
+              <form action={removeAddressTag}>
+                <input name="contactId" type="hidden" value={contactId} />
+                <input name="tagId" type="hidden" value={tag.id} />
+                <button
+                  aria-label={`Remove ${tag.name} tag from this address`}
+                  className="contact-tag-remove-button"
+                  type="submit"
+                >
+                  ×
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <span className="contact-tags-empty">No tags</span>
+      )}
+      {addableTags.length > 0 && (
+        <form action={addAddressTag} className="contact-tag-add-form">
+          <input name="contactId" type="hidden" value={contactId} />
+          <select
+            aria-label="Add tag to this address"
+            defaultValue=""
+            name="tagId"
+            required
+          >
+            <option disabled value="">Select a tag</option>
+            {addableTags.map((tag) => (
+              <option key={tag.id} value={tag.id}>{tag.name}</option>
+            ))}
+          </select>
+          <button type="submit">Add tag</button>
+        </form>
+      )}
+    </div>
+  );
+}
+
 function ContactPerson({
   contact,
   showAddress,
   canEditAddressName,
+  addressTags = [],
+  availableTags = [],
 }: {
   contact: DashboardContact;
   showAddress: boolean;
   canEditAddressName: boolean;
+  addressTags?: TagOption[];
+  availableTags?: TagOption[];
 }) {
   const familyMembers = contact.familyMembers
     ?.split(/\r?\n/)
@@ -97,6 +170,13 @@ function ContactPerson({
         <AddressLabelNameEditor
           addressLabelName={contact.addressLabelName}
           contactIds={[contact.id]}
+        />
+      )}
+      {showAddress && canEditAddressName && (
+        <AddressTagEditor
+          availableTags={availableTags}
+          contactId={contact.id}
+          tags={addressTags}
         />
       )}
 
@@ -154,15 +234,42 @@ export default async function Dashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/");
 
-  const storedContacts = await db.contact.findMany({
-    where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
-  });
+  await migrateLegacyContactTags(session.user.id);
+  const [storedContacts, tags, savedAddressTags] = await Promise.all([
+    db.contact.findMany({
+      where: { userId: session.user.id },
+      orderBy: { updatedAt: "desc" },
+    }),
+    db.tag.findMany({
+      where: { userId: session.user.id },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    db.addressTag.findMany({
+      where: { userId: session.user.id },
+      select: {
+        addressFingerprint: true,
+        tag: { select: { id: true, name: true } },
+      },
+    }),
+  ]);
   const contacts = storedContacts.map((contact) => ({
     ...contact,
     ...decryptContactDetails(contact),
   }));
-  const contactGroups = groupContactsByAddress(contacts);
+  const tagsByAddress = new Map<string, TagOption[]>();
+  for (const addressTag of savedAddressTags) {
+    const tagsForAddress =
+      tagsByAddress.get(addressTag.addressFingerprint) ?? [];
+    tagsForAddress.push(addressTag.tag);
+    tagsByAddress.set(addressTag.addressFingerprint, tagsForAddress);
+  }
+  const contactGroups = groupContactsByAddress(contacts).map((group) => ({
+    ...group,
+    addressTags: group.key
+      ? tagsByAddress.get(createAddressFingerprint(group.key)) ?? []
+      : [],
+  }));
   const addressCount = contactGroups.filter((group) => group.key !== null).length;
   return (
     <div className="dashboard-page">
@@ -171,7 +278,7 @@ export default async function Dashboard() {
           <p className="eyebrow">The people who matter</p>
           <h1>Your circle</h1>
         </div>
-        <p>Keep the little details close, so staying in touch feels natural.</p>
+        <p className="tag-line">Keep the little details close, so staying in touch feels natural.</p>
       </header>
 
       <div className="dashboard-content">
@@ -207,6 +314,44 @@ export default async function Dashboard() {
               {addressCount} unique {addressCount === 1 ? "address" : "addresses"}
             </p>
           </div>
+          <div className="contact-tag-manager">
+            <div>
+              <h3>Manage tags</h3>
+              <p>Create tags to organize your contacts.</p>
+            </div>
+            <form action={createContactTag} className="contact-tag-create-form">
+              <label htmlFor="new-contact-tag">Tag name</label>
+              <input
+                id="new-contact-tag"
+                maxLength={50}
+                name="name"
+                placeholder="Family"
+                required
+              />
+              <button type="submit">Create tag</button>
+            </form>
+            {tags.length === 0 ? (
+              <p className="contact-tags-empty">No tags created yet.</p>
+            ) : (
+              <ul aria-label="Created tags" className="contact-tag-list">
+                {tags.map((tag) => (
+                  <li key={tag.id}>
+                    <span>{tag.name}</span>
+                    <form action={deleteContactTag}>
+                      <input name="tagId" type="hidden" value={tag.id} />
+                      <button
+                        aria-label={`Delete tag ${tag.name}`}
+                        className="contact-tag-remove-button"
+                        type="submit"
+                      >
+                        ×
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           {contacts.length === 0 ? (
             <div className="empty-contacts">
               <p>Your circle is ready to grow.</p>
@@ -219,6 +364,8 @@ export default async function Dashboard() {
                   const contact = group.contacts[0];
                   return (
                     <ContactPerson
+                      addressTags={group.addressTags}
+                      availableTags={tags}
                       contact={contact}
                       key={contact.id}
                       showAddress
@@ -249,6 +396,13 @@ export default async function Dashboard() {
                       className="shared-address-label-editor"
                       contactIds={group.contacts.map((contact) => contact.id)}
                     />
+                    {group.key && (
+                      <AddressTagEditor
+                        contactId={group.contacts[0].id}
+                        tags={group.addressTags}
+                        availableTags={tags}
+                      />
+                    )}
                     <ul className="shared-contact-people">
                       {group.contacts.map((contact) => (
                         <ContactPerson

@@ -21,6 +21,8 @@ model User {
   gmailConnection  GmailConnection?
   protonConnection ProtonConnection?
   mailingLists     MailingList[]
+  tags             Tag[]
+  addressTags      AddressTag[]
 }
 
 model GmailConnection {
@@ -109,6 +111,7 @@ model Contact {
   userId            String
   user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   mailingLists      MailingListContact[]
+  tags              ContactTag[]
 
   @@index([userId, updatedAt])
 }
@@ -137,4 +140,39 @@ model MailingListContact {
 
   @@id([mailingListId, contactId])
   @@index([contactId])
+}
+
+model Tag {
+  id             String       @id @default(cuid())
+  userId         String
+  name           String
+  normalizedName String
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts       ContactTag[]
+  addressTags    AddressTag[]
+
+  @@unique([userId, normalizedName])
+  @@index([userId, name])
+}
+
+model ContactTag {
+  contactId String
+  tagId     String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, tagId])
+  @@index([tagId])
+}
+
+model AddressTag {
+  userId             String
+  addressFingerprint String
+  tagId              String
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag                Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, addressFingerprint, tagId])
+  @@index([tagId])
 }

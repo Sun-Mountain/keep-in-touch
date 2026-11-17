@@ -1,6 +1,7 @@
 import {
   createCipheriv,
   createDecipheriv,
+  createHmac,
   randomBytes,
 } from "node:crypto";
 
@@ -26,6 +27,13 @@ function getEncryptionKey() {
 
 export function assertContactEncryptionKeyConfigured() {
   getEncryptionKey();
+}
+
+/** @param {string} addressKey */
+export function createAddressFingerprint(addressKey) {
+  return createHmac("sha256", getEncryptionKey())
+    .update(addressKey, "utf8")
+    .digest("hex");
 }
 
 /**

@@ -6,6 +6,7 @@ import {
 } from "./contact-crypto-core.js";
 
 export { assertContactEncryptionKeyConfigured } from "./contact-crypto-core.js";
+export { createAddressFingerprint } from "./contact-crypto-core.js";
 
 export type ContactDetails = {
   name: string;
