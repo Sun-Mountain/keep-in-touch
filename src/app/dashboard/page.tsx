@@ -1,13 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  deleteContact,
-  updateAddressLabelName,
-} from "@/app/dashboard/actions";
+import { deleteContact } from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
 import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
+import { AddressLabelNameEditor } from "@/app/dashboard/address-label-name-editor";
 import type { Contact } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { decryptContactDetails } from "@/lib/contact-crypto";
@@ -35,39 +33,6 @@ function contactAddress(contact: ContactDetails) {
       .join(", "),
     contact.addressCountry,
   ].filter(Boolean);
-}
-
-function AddressLabelNameEditor({
-  contactIds,
-  addressLabelName,
-  className,
-}: {
-  contactIds: string[];
-  addressLabelName: string | null;
-  className?: string;
-}) {
-  return (
-    <details className={className ?? "contact-address-label-editor"}>
-      <summary className="contact-address-label-toggle">
-        {addressLabelName ? "Change address name" : "Set address name"}
-      </summary>
-      <form action={updateAddressLabelName} className="contact-address-label-form">
-        {contactIds.map((id) => (
-          <input key={id} name="contactId" type="hidden" value={id} />
-        ))}
-        <label>
-          Alternative address name
-          <input
-            defaultValue={addressLabelName ?? ""}
-            maxLength={100}
-            name="addressLabelName"
-            placeholder="Household or organization name"
-          />
-        </label>
-        <button type="submit">Save name</button>
-      </form>
-    </details>
-  );
 }
 
 function ContactPerson({

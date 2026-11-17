@@ -926,20 +926,16 @@ button {
 }
 
 .contact-address-label-toggle {
-  display: inline-block;
   padding: 6px 0;
+  background: transparent;
   color: $dusty-grape;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  list-style: none;
-  text-underline-offset: 3px;
-
-  &::-webkit-details-marker {
-    display: none;
-  }
 
   &:hover {
+    background: transparent;
+    box-shadow: none;
     text-decoration: underline;
   }
 }
@@ -948,8 +944,7 @@ button {
   padding: 0;
 }
 
-.contact-address-label-editor[open] > .contact-address-label-form,
-.shared-address-label-editor[open] > .contact-address-label-form {
+.contact-address-label-form:not([hidden]) {
   margin-top: 8px;
 }
 
@@ -983,6 +978,10 @@ button {
     padding: 9px 12px;
     font-size: 12px;
   }
+}
+
+.contact-address-label-form[hidden] {
+  display: none;
 }
 
 .shared-address-count {
@@ -1341,38 +1340,6 @@ button {
     display: block;
     margin-top: 3px;
     color: $grey-olive;
-    font-size: 11px;
-  }
-}
-
-.mailing-list-address-name-form {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: end;
-  gap: 8px;
-
-  label {
-    display: grid;
-    flex: 1;
-    gap: 4px;
-    color: $grey-olive;
-    font-size: 10px;
-  }
-
-  input {
-    box-sizing: border-box;
-    min-height: 34px;
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid rgba(74, 78, 105, 0.24);
-    border-radius: 5px;
-    color: $space-indigo;
-    font: inherit;
-    font-size: 12px;
-  }
-
-  button {
-    padding: 8px 10px;
     font-size: 11px;
   }
 }

@@ -126,31 +126,6 @@ export async function updateMailingListAddressSent(formData: FormData) {
   revalidatePath("/dashboard/mailing-lists");
 }
 
-export async function updateMailingListAddressName(formData: FormData) {
-  const userId = await getUserId();
-  const { mailingListId, contactIds } = parseMailingListAddress(formData);
-  const addressLabelName = getText(formData, "addressLabelName")
-    .replace(/\s+/g, " ");
-  if (addressLabelName.length > 100) {
-    throw new Error("An address label name must be 100 characters or fewer.");
-  }
-
-  const result = await db.mailingListContact.updateMany({
-    where: {
-      mailingListId,
-      contactId: { in: contactIds },
-      mailingList: { userId },
-      contact: { userId },
-    },
-    data: { addressLabelName: addressLabelName || null },
-  });
-  if (result.count !== contactIds.length) {
-    throw new Error("Some mailing-list members could not be updated.");
-  }
-
-  revalidatePath("/dashboard/mailing-lists");
-}
-
 export async function deleteMailingList(formData: FormData) {
   const userId = await getUserId();
   const id = getText(formData, "id");

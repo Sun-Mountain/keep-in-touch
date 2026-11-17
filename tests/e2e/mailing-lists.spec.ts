@@ -104,14 +104,11 @@ test("saves, prints, and deletes reusable lists from all or selected contacts", 
   await expect(savedAllList.locator("summary")).toContainText("Holiday cards");
   await expect(savedAllList.getByText("2 people · 1 address")).toBeVisible();
   await savedAllList.locator("summary").click();
-  const addressNameForm = savedAllList.locator(".mailing-list-address-name-form");
   const printedLabels = savedAllList.locator(".mailing-address-labels");
   await expect(printedLabels).toContainText("The Taylor-Morgan Household");
-  await addressNameForm
-    .getByLabel("Alternative address name")
-    .fill("Mailing List Override");
-  await addressNameForm.getByRole("button", { name: "Save name" }).click();
-  await expect(printedLabels).toContainText("Mailing List Override");
+  await expect(
+    savedAllList.getByLabel("Alternative address name"),
+  ).toHaveCount(0);
   await expect(printedLabels).not.toContainText("Jamie Taylor");
   await expect(printedLabels).not.toContainText("Alex Morgan");
 
@@ -134,7 +131,7 @@ test("saves, prints, and deletes reusable lists from all or selected contacts", 
   ).toBeChecked();
   await expect(
     savedAfterReload.locator(".mailing-address-labels"),
-  ).toContainText("Mailing List Override");
+  ).toContainText("The Taylor-Morgan Household");
 
   await listSection.getByLabel("List name").fill("Just Jamie");
   await nameSearch.fill("jamie");

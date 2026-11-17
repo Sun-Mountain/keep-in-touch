@@ -5,7 +5,6 @@ import { groupContactsByAddress } from "@/lib/contact-grouping.js";
 import {
   createMailingList,
   deleteMailingList,
-  updateMailingListAddressName,
   updateMailingListAddressSent,
   type CreateMailingListState,
 } from "../mailing-list-actions";
@@ -249,34 +248,6 @@ export function MailingLists({
                                 ))}
                               </address>
                             </div>
-                            <form
-                              action={updateMailingListAddressName}
-                              className="mailing-list-address-name-form"
-                            >
-                              <input
-                                name="mailingListId"
-                                type="hidden"
-                                value={list.id}
-                              />
-                              {group.contacts.map((contact) => (
-                                <input
-                                  key={contact.id}
-                                  name="contactId"
-                                  type="hidden"
-                                  value={contact.id}
-                                />
-                              ))}
-                              <label>
-                                Alternative address name
-                                <input
-                                  defaultValue={addressLabelName}
-                                  maxLength={100}
-                                  name="addressLabelName"
-                                  placeholder={names}
-                                />
-                              </label>
-                              <button type="submit">Save name</button>
-                            </form>
                             <form
                               action={updateMailingListAddressSent}
                               className="mailing-list-sent-form"
