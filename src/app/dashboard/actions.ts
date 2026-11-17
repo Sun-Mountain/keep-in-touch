@@ -68,6 +68,17 @@ function normalizeTagName(name: string) {
   return name.normalize("NFKC").replace(/\s+/g, " ").toLowerCase();
 }
 
+async function getOwnedAddressFingerprint(userId: string, contactId: string) {
+  const contact = await db.contact.findFirst({
+    where: { id: contactId, userId },
+  });
+  if (!contact) throw new Error("That contact could not be found.");
+
+  const addressKey = groupContactsByAddress([decryptContactDetails(contact)])[0]?.key;
+  if (!addressKey) throw new Error("That contact does not have a complete address.");
+  return createAddressFingerprint(addressKey);
+}
+
 export async function createContactTag(formData: FormData) {
   const userId = await getUserId();
   const name = getText(formData, "name").normalize("NFKC").replace(/\s+/g, " ");
@@ -102,23 +113,51 @@ export async function addAddressTag(formData: FormData) {
     throw new Error("A contact and tag are required.");
   }
 
-  const [contact, tag] = await Promise.all([
-    db.contact.findFirst({ where: { id: contactId, userId } }),
+  const [addressFingerprint, tag] = await Promise.all([
+    getOwnedAddressFingerprint(userId, contactId),
     db.tag.findFirst({ where: { id: tagId, userId }, select: { id: true } }),
   ]);
-  if (!contact || !tag) {
-    throw new Error("That contact or tag could not be found.");
-  }
+  if (!tag) throw new Error("That tag could not be found.");
 
-  const addressKey = groupContactsByAddress([decryptContactDetails(contact)])[0]?.key;
-  if (!addressKey) throw new Error("That contact does not have a complete address.");
-  const addressFingerprint = createAddressFingerprint(addressKey);
   await db.addressTag.upsert({
     where: {
       userId_addressFingerprint_tagId: { userId, addressFingerprint, tagId },
     },
     create: { userId, addressFingerprint, tagId },
     update: {},
+  });
+  revalidatePath("/dashboard");
+}
+
+export async function createAndAddAddressTag(formData: FormData) {
+  const userId = await getUserId();
+  const contactId = getText(formData, "contactId");
+  const name = getText(formData, "tagName").normalize("NFKC").replace(/\s+/g, " ");
+  if (!contactId) throw new Error("A contact ID is required.");
+  if (!name || name.length > MAX_TAG_NAME_LENGTH) {
+    throw new Error(`A tag name is required and must be ${MAX_TAG_NAME_LENGTH} characters or fewer.`);
+  }
+
+  const addressFingerprint = await getOwnedAddressFingerprint(userId, contactId);
+  const normalizedName = normalizeTagName(name);
+  await db.$transaction(async (transaction) => {
+    const tag = await transaction.tag.upsert({
+      where: { userId_normalizedName: { userId, normalizedName } },
+      create: { userId, name, normalizedName },
+      update: {},
+      select: { id: true },
+    });
+    await transaction.addressTag.upsert({
+      where: {
+        userId_addressFingerprint_tagId: {
+          userId,
+          addressFingerprint,
+          tagId: tag.id,
+        },
+      },
+      create: { userId, addressFingerprint, tagId: tag.id },
+      update: {},
+    });
   });
   revalidatePath("/dashboard");
 }
@@ -131,17 +170,14 @@ export async function removeAddressTag(formData: FormData) {
     throw new Error("A contact and tag are required.");
   }
 
-  const contact = await db.contact.findFirst({ where: { id: contactId, userId } });
-  if (!contact) throw new Error("That contact could not be found.");
   const tag = await db.tag.findFirst({ where: { id: tagId, userId }, select: { id: true } });
   if (!tag) throw new Error("That tag could not be found.");
 
-  const addressKey = groupContactsByAddress([decryptContactDetails(contact)])[0]?.key;
-  if (!addressKey) throw new Error("That contact does not have a complete address.");
+  const addressFingerprint = await getOwnedAddressFingerprint(userId, contactId);
   await db.addressTag.deleteMany({
     where: {
       userId,
-      addressFingerprint: createAddressFingerprint(addressKey),
+      addressFingerprint,
       tagId,
     },
   });

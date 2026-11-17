@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
-  addAddressTag,
   deleteContact,
   deleteContactTag,
   removeAddressTag,
@@ -10,6 +9,7 @@ import {
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
+import { AddressTagPicker } from "@/app/dashboard/address-tag-picker";
 import { EraseContactsButton } from "@/app/dashboard/erase-contacts-button";
 import { AddressLabelNameEditor } from "@/app/dashboard/address-label-name-editor";
 import type { Contact } from "@/generated/prisma/client";
@@ -55,10 +55,6 @@ function AddressTagEditor({
   tags: TagOption[];
   availableTags: TagOption[];
 }) {
-  const addableTags = availableTags.filter(
-    (tag) => !tags.some((addressTag) => addressTag.id === tag.id),
-  );
-
   return (
     <div className="contact-tags address-tag-editor">
       {tags.length > 0 ? (
@@ -83,23 +79,11 @@ function AddressTagEditor({
       ) : (
         <span className="contact-tags-empty">No tags</span>
       )}
-      {addableTags.length > 0 && (
-        <form action={addAddressTag} className="contact-tag-add-form">
-          <input name="contactId" type="hidden" value={contactId} />
-          <select
-            aria-label="Add tag to this address"
-            defaultValue=""
-            name="tagId"
-            required
-          >
-            <option disabled value="">Select a tag</option>
-            {addableTags.map((tag) => (
-              <option key={tag.id} value={tag.id}>{tag.name}</option>
-            ))}
-          </select>
-          <button type="submit">Add tag</button>
-        </form>
-      )}
+      <AddressTagPicker
+        assignedTagIds={tags.map((tag) => tag.id)}
+        contactId={contactId}
+        tags={availableTags}
+      />
     </div>
   );
 }
@@ -285,35 +269,23 @@ export default async function Dashboard() {
         <div className="contact-entry-options">
           <details className="add-contact-panel import-contact-panel" name="contact-entry" open>
             <summary className="panel-heading accordion-heading">
-              <p className="eyebrow">Bring your people together</p>
-              <h2 id="import-contacts-title">Import contacts</h2>
+              <div>
+                <p className="eyebrow">Bring your people together</p>
+                <h2 id="import-contacts-title">Import contacts</h2>
+              </div>
             </summary>
             <ContactImportForm />
           </details>
           <details className="add-contact-panel" name="contact-entry">
             <summary className="panel-heading accordion-heading">
-              <p className="eyebrow">A new connection</p>
-              <h2 id="add-contact-title">Add a person</h2>
+              <div>
+                <p className="eyebrow">A new connection</p>
+                <h2 id="add-contact-title">Add a person</h2>
+              </div>
             </summary>
             <ContactForm />
           </details>
-          {process.env.NODE_ENV === "development" && (
-            <aside className="development-tools" aria-label="Development tools">
-              <p className="eyebrow">Development only</p>
-              <p>Erase contacts belonging to your account.</p>
-              <EraseContactsButton />
-            </aside>
-          )}
-        </div>
 
-        <section className="contacts-section" aria-labelledby="contacts-title">
-          <div className="contacts-heading">
-            <h2 id="contacts-title">Your people</h2>
-            <span>{contacts.length}</span>
-            <p className="address-count">
-              {addressCount} unique {addressCount === 1 ? "address" : "addresses"}
-            </p>
-          </div>
           <div className="contact-tag-manager">
             <div>
               <h3>Manage tags</h3>
@@ -351,6 +323,23 @@ export default async function Dashboard() {
                 ))}
               </ul>
             )}
+          </div>
+          {process.env.NODE_ENV === "development" && (
+            <aside className="development-tools" aria-label="Development tools">
+              <p className="eyebrow">Development only</p>
+              <p>Erase contacts belonging to your account.</p>
+              <EraseContactsButton />
+            </aside>
+          )}
+        </div>
+
+        <section className="contacts-section" aria-labelledby="contacts-title">
+          <div className="contacts-heading">
+            <h2 id="contacts-title">Your people</h2>
+            <span>{contacts.length}</span>
+            <p className="address-count">
+              {addressCount} unique {addressCount === 1 ? "address" : "addresses"}
+            </p>
           </div>
           {contacts.length === 0 ? (
             <div className="empty-contacts">

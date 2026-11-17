@@ -60,6 +60,8 @@ test("creates, deletes, adds, and removes address tags", async ({ page }) => {
   await expect(tagManager.getByRole("list", { name: "Created tags" })).toContainText(
     "Family",
   );
+  await tagManager.getByLabel("Tag name").fill("Friends");
+  await tagManager.getByRole("button", { name: "Create tag" }).click();
 
   const addressCard = page.locator(".contact-list > .shared-address-card");
   await expect(addressCard).toHaveCount(1);
@@ -98,21 +100,37 @@ test("creates, deletes, adds, and removes address tags", async ({ page }) => {
   });
   await expect(addressTags).toContainText("Family");
 
+  const tagSearch = addressTagEditor.getByLabel("Filter or create an address tag");
+  const tagOptions = addressTagEditor.getByRole("list", {
+    name: "Matching tags",
+  });
+  await expect(tagOptions).toBeHidden();
+  await tagSearch.focus();
+  await expect(tagOptions).toBeVisible();
+  await tagSearch.fill("friend");
+  await expect(addressTagEditor.getByRole("button", { name: "Add Friends" })).toBeVisible();
+  await expect(addressTagEditor.getByRole("button", { name: "Add Family" })).toHaveCount(0);
+  await addressTagEditor.getByRole("button", { name: "Add Friends" }).click();
+  await expect(addressTags).toContainText("Friends");
+
   await addressTags
     .getByRole("button", { name: "Remove Family tag from this address" })
     .click();
-  await expect(addressTags).toHaveCount(0);
+  await expect(addressTags).not.toContainText("Family");
+
+  await tagSearch.fill("Neighbors");
+  await addressTagEditor
+    .getByRole("button", { name: 'Create "Neighbors" and add' })
+    .click();
+  await expect(addressTags).toContainText("Neighbors");
+  await expect(tagManager.getByRole("list", { name: "Created tags" })).toContainText(
+    "Neighbors",
+  );
+
+  await tagManager.getByRole("button", { name: "Delete tag Friends" }).click();
+  await expect(addressTags).not.toContainText("Friends");
+  await tagManager.getByRole("button", { name: "Delete tag Neighbors" }).click();
   await expect(addressTagEditor.getByText("No tags")).toBeVisible();
-
-  await addressTagEditor.getByLabel("Add tag to this address").selectOption({
-    label: "Family",
-  });
-  await addressTagEditor.getByRole("button", { name: "Add tag" }).click();
-  await expect(addressTagEditor.getByRole("list", {
-    name: "Address tags",
-  })).toContainText("Family");
-
   await tagManager.getByRole("button", { name: "Delete tag Family" }).click();
   await expect(tagManager.getByRole("list", { name: "Created tags" })).toHaveCount(0);
-  await expect(addressTagEditor.getByText("No tags")).toBeVisible();
 });
