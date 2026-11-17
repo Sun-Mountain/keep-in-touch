@@ -4,6 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/dist/server/request/headers";
 import { redirect } from "next/dist/client/components/navigation";
 
+import {
+  Home,
+  MailOutlineOutlined,
+  Outbox,
+  Settings
+} from "@mui/icons-material"
+
 export default async function Navigation() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/");
@@ -11,10 +18,10 @@ export default async function Navigation() {
   return (
     <nav aria-label="Main navigation" className="navigation">
       <div className="navigation-links">
-        <Link href="/dashboard">Your circle</Link>
-        <Link href="/dashboard/mailing-lists">Mailing lists</Link>
-        <Link href="/dashboard/outreach">Email and text</Link>
-        <Link href="/dashboard/settings">Settings</Link>
+        <Link href="/dashboard"><Home /></Link>
+        <Link href="/dashboard/mailing-lists"><MailOutlineOutlined /></Link>
+        <Link href="/dashboard/outreach"><Outbox /></Link>
+        <Link href="/dashboard/settings"><Settings /></Link>
         <SignOutButton />
       </div>
     </nav>
