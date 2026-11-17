@@ -1,6 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { deleteContact } from "@/app/dashboard/actions";
+import {
+  deleteContact,
+  updateAddressLabelName,
+} from "@/app/dashboard/actions";
 import { ContactEditor } from "@/app/dashboard/contact-editor";
 import { ContactImportForm } from "@/app/dashboard/contact-import-form";
 import { ContactForm } from "@/app/dashboard/contact-form";
@@ -34,12 +37,47 @@ function contactAddress(contact: ContactDetails) {
   ].filter(Boolean);
 }
 
+function AddressLabelNameEditor({
+  contactIds,
+  addressLabelName,
+  className,
+}: {
+  contactIds: string[];
+  addressLabelName: string | null;
+  className?: string;
+}) {
+  return (
+    <details className={className ?? "contact-address-label-editor"}>
+      <summary className="contact-address-label-toggle">
+        {addressLabelName ? "Change address name" : "Set address name"}
+      </summary>
+      <form action={updateAddressLabelName} className="contact-address-label-form">
+        {contactIds.map((id) => (
+          <input key={id} name="contactId" type="hidden" value={id} />
+        ))}
+        <label>
+          Alternative address name
+          <input
+            defaultValue={addressLabelName ?? ""}
+            maxLength={100}
+            name="addressLabelName"
+            placeholder="Household or organization name"
+          />
+        </label>
+        <button type="submit">Save name</button>
+      </form>
+    </details>
+  );
+}
+
 function ContactPerson({
   contact,
   showAddress,
+  canEditAddressName,
 }: {
   contact: DashboardContact;
   showAddress: boolean;
+  canEditAddressName: boolean;
 }) {
   const familyMembers = contact.familyMembers
     ?.split(/\r?\n/)
@@ -51,6 +89,7 @@ function ContactPerson({
       contact.phone ||
       contact.birthday ||
       familyMembers?.length ||
+      (showAddress && contact.addressLabelName) ||
       address.length ||
       contact.notes,
   );
@@ -89,6 +128,12 @@ function ContactPerson({
           notes: contact.notes,
         }}
       />
+      {showAddress && canEditAddressName && (
+        <AddressLabelNameEditor
+          addressLabelName={contact.addressLabelName}
+          contactIds={[contact.id]}
+        />
+      )}
 
       {hasDetails && (
         <dl className="contact-details">
@@ -118,6 +163,12 @@ function ContactPerson({
           )}
           {address.length > 0 && (
             <>
+              {showAddress && contact.addressLabelName && (
+                <>
+                  <dt>Address name</dt>
+                  <dd>{contact.addressLabelName}</dd>
+                </>
+              )}
               <dt>Address</dt>
               <dd>{address.map((line, index) => <span key={index}>{line}</span>)}</dd>
             </>
@@ -206,6 +257,7 @@ export default async function Dashboard() {
                       contact={contact}
                       key={contact.id}
                       showAddress
+                      canEditAddressName={group.key !== null}
                     />
                   );
                 }
@@ -216,18 +268,29 @@ export default async function Dashboard() {
                     <div className="shared-address-heading">
                       <div>
                         <p className="eyebrow">Shared mailing address</p>
+                        {group.contacts[0].addressLabelName && (
+                          <p className="shared-address-name">
+                            {group.contacts[0].addressLabelName}
+                          </p>
+                        )}
                         <address>
                           {sharedAddress.map((line, index) => <span key={index}>{line}</span>)}
                         </address>
                       </div>
                       <span className="shared-address-count">{group.contacts.length} people</span>
                     </div>
+                    <AddressLabelNameEditor
+                      addressLabelName={group.contacts[0].addressLabelName}
+                      className="shared-address-label-editor"
+                      contactIds={group.contacts.map((contact) => contact.id)}
+                    />
                     <ul className="shared-contact-people">
                       {group.contacts.map((contact) => (
                         <ContactPerson
                           contact={contact}
                           key={contact.id}
                           showAddress={false}
+                          canEditAddressName={false}
                         />
                       ))}
                     </ul>

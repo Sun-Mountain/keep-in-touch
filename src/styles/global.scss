@@ -911,6 +911,80 @@ button {
   }
 }
 
+.shared-address-name {
+  margin: 0 0 8px;
+  color: $space-indigo;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.shared-address-label-editor {
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(74, 78, 105, 0.14);
+  background: rgba(198, 172, 143, 0.08);
+}
+
+.contact-address-label-toggle {
+  display: inline-block;
+  padding: 6px 0;
+  color: $dusty-grape;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  text-underline-offset: 3px;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.shared-address-label-editor > .contact-address-label-toggle {
+  padding: 0;
+}
+
+.contact-address-label-editor[open] > .contact-address-label-form,
+.shared-address-label-editor[open] > .contact-address-label-form {
+  margin-top: 8px;
+}
+
+.contact-address-label-form {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+
+  label {
+    display: grid;
+    flex: 1;
+    gap: 5px;
+    color: $grey-olive;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  input {
+    box-sizing: border-box;
+    min-height: 36px;
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid rgba(74, 78, 105, 0.24);
+    border-radius: 5px;
+    background: #fff;
+    color: $space-indigo;
+    font: inherit;
+  }
+
+  button {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}
+
 .shared-address-count {
   flex: 0 0 auto;
   padding: 5px 9px;
@@ -1386,7 +1460,8 @@ button {
   }
 
   .shared-address-heading,
-  .shared-contact-person {
+  .shared-contact-person,
+  .shared-address-label-editor {
     padding: 18px;
   }
 }

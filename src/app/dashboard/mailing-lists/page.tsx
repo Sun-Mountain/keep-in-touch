@@ -35,7 +35,7 @@ export default async function MailingListsPage() {
     contacts: mailingList.members.map((member) => ({
       id: member.contact.id,
       sentAt: member.sentAt,
-      addressLabelName: member.addressLabelName,
+      mailingListAddressLabelName: member.addressLabelName,
       ...decryptContactDetails(member.contact),
     })),
   }));

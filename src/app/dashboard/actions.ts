@@ -14,6 +14,7 @@ import {
   hasSameContactInformation,
   normalizeContactName,
 } from "@/lib/contact-duplicates.js";
+import { groupContactsByAddress } from "@/lib/contact-grouping.js";
 import {
   type ContactImportUpdate,
   type ContactInputValues,
@@ -134,6 +135,7 @@ function parseContactForm(
       addressRegion: values.addressRegion,
       addressPostalCode: values.addressPostalCode,
       addressCountry: values.addressCountry || null,
+      addressLabelName: null,
       company: values.company || null,
       notes: values.notes || null,
       lastContact: null,
@@ -284,15 +286,17 @@ export async function confirmContactUpdate(
   }
 
   const addressChanged = mailingAddressChanged(existingDetails, parsed.details);
+  const updatedDetails: ContactDetails = {
+    ...parsed.details,
+    lastContact: existingDetails.lastContact,
+    addressLabelName: addressChanged
+      ? null
+      : existingDetails.addressLabelName,
+  };
   const result = await db.$transaction(async (transaction) => {
     const updated = await transaction.contact.updateMany({
       where: { id: contactId, userId, updatedAt: existingContact.updatedAt },
-      data: {
-        ...encryptedContactStorageData({
-          ...parsed.details,
-          lastContact: existingDetails.lastContact,
-        }),
-      },
+      data: { ...encryptedContactStorageData(updatedDetails) },
     });
     if (updated.count > 0 && addressChanged) {
       await transaction.mailingListContact.updateMany({
@@ -368,11 +372,13 @@ export async function updateContact(
     addressRegion,
     addressPostalCode,
     addressCountry: addressCountry || null,
+    addressLabelName: existingDetails.addressLabelName,
     company: getText(formData, "company") || null,
     notes: getText(formData, "notes") || null,
     lastContact: existingDetails.lastContact,
   };
   const addressChanged = mailingAddressChanged(existingDetails, updatedDetails);
+  if (addressChanged) updatedDetails.addressLabelName = null;
 
   const result = await db.$transaction(async (transaction) => {
     const updated = await transaction.contact.updateMany({
@@ -394,6 +400,67 @@ export async function updateContact(
   revalidatePath("/dashboard");
   if (addressChanged) revalidatePath("/dashboard/mailing-lists");
   return { error: "", success: true };
+}
+
+export async function updateAddressLabelName(formData: FormData) {
+  const userId = await getUserId();
+  const rawIds = formData.getAll("contactId");
+  if (
+    rawIds.length === 0 ||
+    rawIds.length > 5_000 ||
+    rawIds.some((id) => typeof id !== "string" || !id.trim())
+  ) {
+    throw new Error("Select the contacts for one complete mailing address.");
+  }
+
+  const contactIds = rawIds.map((id) => String(id).trim());
+  if (new Set(contactIds).size !== contactIds.length) {
+    throw new Error("A contact was selected more than once.");
+  }
+
+  const addressLabelName = getText(formData, "addressLabelName")
+    .replace(/\s+/g, " ");
+  if (addressLabelName.length > 100) {
+    throw new Error("An address name must be 100 characters or fewer.");
+  }
+
+  await db.$transaction(async (transaction) => {
+    const storedContacts = await transaction.contact.findMany({
+      where: { userId, id: { in: contactIds } },
+    });
+    if (storedContacts.length !== contactIds.length) {
+      throw new Error("Some selected contacts are unavailable.");
+    }
+
+    const contacts = storedContacts.map((contact) => ({
+      contact,
+      details: decryptContactDetails(contact),
+    }));
+    const addressGroups = groupContactsByAddress(
+      contacts.map(({ details }) => details),
+    );
+    if (addressGroups.length !== 1 || addressGroups[0]?.key === null) {
+      throw new Error("The selected contacts must share one complete mailing address.");
+    }
+
+    for (const { contact, details } of contacts) {
+      const updated = await transaction.contact.updateMany({
+        where: { id: contact.id, userId, updatedAt: contact.updatedAt },
+        data: {
+          ...encryptedContactStorageData({
+            ...details,
+            addressLabelName: addressLabelName || null,
+          }),
+        },
+      });
+      if (updated.count !== 1) {
+        throw new Error("A contact changed while its address name was being saved.");
+      }
+    }
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/mailing-lists");
 }
 
 function parseSpreadsheetBirthday(value: string): Date | null | undefined {
@@ -500,6 +567,7 @@ export async function importContacts(
       addressRegion: row.addressRegion,
       addressPostalCode: row.addressPostalCode,
       addressCountry: row.addressCountry || null,
+      addressLabelName: null,
       company: row.company || null,
       notes: row.notes || null,
       lastContact: null,

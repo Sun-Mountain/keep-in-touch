@@ -19,6 +19,7 @@ export type ContactDetails = {
   addressRegion: string | null;
   addressPostalCode: string | null;
   addressCountry: string | null;
+  addressLabelName: string | null;
   company: string | null;
   notes: string | null;
   lastContact: Date | null;
@@ -27,7 +28,7 @@ export type ContactDetails = {
 const ENCRYPTED_CONTACT_NAME = "[encrypted]";
 type ContactStorageRecord = Pick<
   Contact,
-  keyof ContactDetails | "encryptedData"
+  Exclude<keyof ContactDetails, "addressLabelName"> | "encryptedData"
 >;
 
 export function encryptContactDetails(details: ContactDetails) {
@@ -66,6 +67,7 @@ function parseContactDetails(value: unknown): ContactDetails {
     "addressRegion",
     "addressPostalCode",
     "addressCountry",
+    "addressLabelName",
     "company",
     "notes",
   ] as const;
@@ -74,6 +76,7 @@ function parseContactDetails(value: unknown): ContactDetails {
     throw new Error("Encrypted contact data has an invalid format.");
   }
   for (const field of stringFields) {
+    if (field === "addressLabelName" && data[field] === undefined) continue;
     if (data[field] !== null && typeof data[field] !== "string") {
       throw new Error("Encrypted contact data has an invalid format.");
     }
@@ -91,6 +94,7 @@ function parseContactDetails(value: unknown): ContactDetails {
     addressRegion: data.addressRegion as string | null,
     addressPostalCode: data.addressPostalCode as string | null,
     addressCountry: data.addressCountry as string | null,
+    addressLabelName: (data.addressLabelName as string | null | undefined) ?? null,
     company: data.company as string | null,
     notes: data.notes as string | null,
     lastContact: parseDate(data.lastContact, false),
@@ -115,6 +119,7 @@ export function decryptContactDetails(contact: ContactStorageRecord): ContactDet
       addressRegion: contact.addressRegion,
       addressPostalCode: contact.addressPostalCode,
       addressCountry: contact.addressCountry,
+      addressLabelName: null,
       company: contact.company,
       notes: contact.notes,
       lastContact: contact.lastContact,

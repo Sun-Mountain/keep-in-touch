@@ -15,10 +15,12 @@ test("contact encryption round-trips data and rejects invalid keys or tampering"
       name: "Alex Morgan",
       email: "alex@example.com",
       addressLine1: "123 Main Street",
+      addressLabelName: "The Morgan Family",
       birthday: new Date("1990-04-03T00:00:00.000Z"),
       lastContact: new Date("2026-11-15T12:30:00.000Z"),
     });
     assert.equal(JSON.parse(plaintext).birthday, "1990-04-03");
+    assert.equal(JSON.parse(plaintext).addressLabelName, "The Morgan Family");
     const encrypted = encryptPayload(plaintext);
     assert.equal(decryptPayload(encrypted), plaintext);
     assert.notEqual(encrypted, encryptPayload(plaintext));

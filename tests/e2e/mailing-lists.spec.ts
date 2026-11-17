@@ -58,6 +58,28 @@ test("saves, prints, and deletes reusable lists from all or selected contacts", 
     await expect(page.getByRole("heading", { name })).toBeVisible();
   }
 
+  const sharedAddressCard = page.locator(".shared-address-card");
+  await expect(sharedAddressCard).toBeVisible();
+  const dashboardAddressNameEditor = sharedAddressCard.locator(
+    ".shared-address-label-editor",
+  );
+  await expect(
+    dashboardAddressNameEditor.getByLabel("Alternative address name"),
+  ).toBeHidden();
+  await dashboardAddressNameEditor
+    .getByRole("button", { name: "Set address name" })
+    .click();
+  await expect(
+    dashboardAddressNameEditor.getByLabel("Alternative address name"),
+  ).toBeVisible();
+  await dashboardAddressNameEditor
+    .getByLabel("Alternative address name")
+    .fill("The Taylor-Morgan Household");
+  await dashboardAddressNameEditor.getByRole("button", { name: "Save name" }).click();
+  await expect(sharedAddressCard.locator(".shared-address-name")).toHaveText(
+    "The Taylor-Morgan Household",
+  );
+
   await expect(page.getByRole("region", { name: "Mailing lists" })).toHaveCount(0);
   await page.getByRole("link", { name: "Mailing lists" }).click();
   await expect(page).toHaveURL(/\/dashboard\/mailing-lists$/);
@@ -83,12 +105,13 @@ test("saves, prints, and deletes reusable lists from all or selected contacts", 
   await expect(savedAllList.getByText("2 people · 1 address")).toBeVisible();
   await savedAllList.locator("summary").click();
   const addressNameForm = savedAllList.locator(".mailing-list-address-name-form");
-  await addressNameForm
-    .getByLabel("Alternative address name")
-    .fill("The Taylor-Morgan Household");
-  await addressNameForm.getByRole("button", { name: "Save name" }).click();
   const printedLabels = savedAllList.locator(".mailing-address-labels");
   await expect(printedLabels).toContainText("The Taylor-Morgan Household");
+  await addressNameForm
+    .getByLabel("Alternative address name")
+    .fill("Mailing List Override");
+  await addressNameForm.getByRole("button", { name: "Save name" }).click();
+  await expect(printedLabels).toContainText("Mailing List Override");
   await expect(printedLabels).not.toContainText("Jamie Taylor");
   await expect(printedLabels).not.toContainText("Alex Morgan");
 
@@ -111,7 +134,7 @@ test("saves, prints, and deletes reusable lists from all or selected contacts", 
   ).toBeChecked();
   await expect(
     savedAfterReload.locator(".mailing-address-labels"),
-  ).toContainText("The Taylor-Morgan Household");
+  ).toContainText("Mailing List Override");
 
   await listSection.getByLabel("List name").fill("Just Jamie");
   await nameSearch.fill("jamie");

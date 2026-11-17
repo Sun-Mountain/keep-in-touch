@@ -21,6 +21,7 @@ type MailingAddressContact = {
   addressCountry: string | null;
   sentAt?: Date | null;
   addressLabelName?: string | null;
+  mailingListAddressLabelName?: string | null;
 };
 
 type SavedMailingList = {
@@ -87,6 +88,8 @@ export function MailingLists({
       ...group,
       isSent: group.contacts.every((contact) => contact.sentAt != null),
       addressLabelName:
+        group.contacts.find((contact) => contact.mailingListAddressLabelName)
+          ?.mailingListAddressLabelName ??
         group.contacts.find((contact) => contact.addressLabelName)?.addressLabelName ??
         null,
     })),

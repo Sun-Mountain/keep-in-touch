@@ -32,7 +32,7 @@ On the dashboard's **Email and text** page, select up to 25 contacts to send sep
 
 ## Mailing lists
 
-Open **Mailing lists** from the navigation to select contacts with complete mailing addresses and save a reusable, named mailing list. Lists are private to your account, and deleting a contact removes it from any saved lists. Expand a saved list to review its people, choose an alternative name for an address on the printed label, or delete the list. Each unique mailing address has a persistent checkbox to track when its letter has been sent; people sharing an address are marked together.
+Open **Mailing lists** from the navigation to select contacts with complete mailing addresses and save a reusable, named mailing list. Lists are private to your account, and deleting a contact removes it from any saved lists. Set an alternative name for an address from its contact card, or override that name for a specific mailing list's printed label. Each unique mailing address has a persistent checkbox to track when its letter has been sent; people sharing an address are marked together.
 
 Use **Settings** to connect email accounts. To send email through Gmail, create a Google OAuth web client, enable the Gmail API, configure the OAuth consent screen, and add `http://localhost:3000/api/gmail/callback` (or your deployed callback URL) as an authorized redirect URI. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` on the server. Gmail sending uses the `gmail.send` permission; Google's app verification or test-user restrictions may apply. Refresh tokens are encrypted at rest with `CONTACT_ENCRYPTION_KEY`. Disconnecting in the app removes the stored token; you can also revoke access in your Google account settings.
 

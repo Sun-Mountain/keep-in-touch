@@ -32,11 +32,13 @@ export function assertContactEncryptionKeyConfigured() {
  * @param {{
  *   birthday: Date | null;
  *   lastContact: Date | null;
+ *   addressLabelName?: string | null;
  * }} details
  */
 export function serializeContactDetails(details) {
   return JSON.stringify({
     ...details,
+    addressLabelName: details.addressLabelName ?? null,
     birthday: details.birthday?.toISOString().slice(0, 10) ?? null,
     lastContact: details.lastContact?.toISOString() ?? null,
   });
