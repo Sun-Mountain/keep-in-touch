@@ -5,9 +5,9 @@ import { groupContactsByAddress } from "@/lib/contact-grouping.js";
 
 export async function migrateLegacyContactTags(userId: string) {
   const contacts = await db.contact.findMany({
-    where: { userId, tags: { some: {} } },
+    where: { userId, legacyTags: { some: {} } },
     include: {
-      tags: {
+      legacyTags: {
         where: { tag: { userId } },
         select: { tagId: true },
       },
@@ -19,7 +19,7 @@ export async function migrateLegacyContactTags(userId: string) {
     contacts.map((contact) => ({
       id: contact.id,
       ...decryptContactDetails(contact),
-      tagIds: contact.tags.map(({ tagId }) => tagId),
+      tagIds: contact.legacyTags.map(({ tagId }) => tagId),
     })),
   );
   const addressTags = new Map<string, {

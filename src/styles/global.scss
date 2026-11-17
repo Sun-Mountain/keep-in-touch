@@ -1025,6 +1025,11 @@ button {
 .shared-address-card {
   overflow: hidden;
   padding: 0;
+
+  .contact-tags {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 .shared-address-heading {

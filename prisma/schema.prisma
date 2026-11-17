@@ -111,7 +111,7 @@ model Contact {
   userId            String
   user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   mailingLists      MailingListContact[]
-  tags              ContactTag[]
+  legacyTags        ContactTag[]
 
   @@index([userId, updatedAt])
 }
@@ -149,7 +149,7 @@ model Tag {
   normalizedName String
   createdAt      DateTime     @default(now())
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contacts       ContactTag[]
+  legacyContacts ContactTag[]
   addressTags    AddressTag[]
 
   @@unique([userId, normalizedName])

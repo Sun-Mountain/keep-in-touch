@@ -317,7 +317,7 @@ export default async function Dashboard() {
           <div className="contact-tag-manager">
             <div>
               <h3>Manage tags</h3>
-              <p>Create tags to organize your contacts.</p>
+              <p>Create tags to organize mailing addresses.</p>
             </div>
             <form action={createContactTag} className="contact-tag-create-form">
               <label htmlFor="new-contact-tag">Tag name</label>

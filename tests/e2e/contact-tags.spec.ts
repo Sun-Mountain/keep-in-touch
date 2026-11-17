@@ -93,9 +93,6 @@ test("creates, deletes, adds, and removes address tags", async ({ page }) => {
   const addressTagEditor = refreshedAddressCard.locator(".address-tag-editor");
   await expect(refreshedAddressCard.locator(".shared-contact-people .address-tag-editor"))
     .toHaveCount(0);
-  const addTagSelect = addressTagEditor.getByLabel("Add tag to this address");
-  await addTagSelect.selectOption({ label: "Family" });
-  await addressTagEditor.getByRole("button", { name: "Add tag" }).click();
   const addressTags = addressTagEditor.getByRole("list", {
     name: "Address tags",
   });
@@ -105,6 +102,7 @@ test("creates, deletes, adds, and removes address tags", async ({ page }) => {
     .getByRole("button", { name: "Remove Family tag from this address" })
     .click();
   await expect(addressTags).toHaveCount(0);
+  await expect(addressTagEditor.getByText("No tags")).toBeVisible();
 
   await addressTagEditor.getByLabel("Add tag to this address").selectOption({
     label: "Family",
